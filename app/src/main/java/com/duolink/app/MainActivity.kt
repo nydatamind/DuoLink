@@ -179,7 +179,13 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                     if (isNewSignup || !app.authManager.hasUsername()) {
                         navigateTo(Screen.UsernameSetup)
                     } else {
-                        navigateTo(Screen.Pairing)
+                        scope.launch {
+                            if (app.pairingRepository.isPaired()) {
+                                navigateTo(Screen.Home, clearStack = true)
+                            } else {
+                                navigateTo(Screen.Pairing)
+                            }
+                        }
                     }
                 }
             )

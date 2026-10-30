@@ -84,12 +84,23 @@ class SupabaseAuthManager(private val context: Context) {
     fun getUsername(): String? {
         val sessionUser = _currentSession.value?.username
         if (!sessionUser.isNullOrBlank()) return sessionUser
+        val email = getInternalEmail()
+        if (!email.isNullOrBlank()) {
+            val emailUser = prefs.getString("username_for_$email", null)
+            if (!emailUser.isNullOrBlank()) return emailUser
+        }
         return prefs.getString(KEY_USERNAME, null)
     }
 
     fun setUsername(username: String) {
-        prefs.edit().putString(KEY_USERNAME, username.trim()).apply()
-        _currentSession.value = _currentSession.value?.copy(username = username.trim())
+        val clean = username.trim().lowercase()
+        val email = getInternalEmail()
+        val editor = prefs.edit().putString(KEY_USERNAME, clean)
+        if (!email.isNullOrBlank()) {
+            editor.putString("username_for_$email", clean)
+        }
+        editor.apply()
+        _currentSession.value = _currentSession.value?.copy(username = clean)
     }
 
     fun hasUsername(): Boolean {
@@ -206,7 +217,9 @@ class SupabaseAuthManager(private val context: Context) {
     fun signInWithGoogle(email: String, googleId: String = ""): UserSession {
         val cleanEmail = email.trim().lowercase()
         val userId = if (googleId.isNotBlank()) googleId else UUID.nameUUIDFromBytes(cleanEmail.toByteArray()).toString()
-        val username = prefs.getString(KEY_USERNAME, "") ?: ""
+        val username = prefs.getString("username_for_$cleanEmail", null)
+            ?: prefs.getString(KEY_USERNAME, "")
+            ?: ""
         val session = UserSession(
             userId = userId,
             email = cleanEmail,
@@ -235,6 +248,7 @@ class SupabaseAuthManager(private val context: Context) {
             .putLong(KEY_AUTH_TIME, session.authenticatedAt)
         if (session.username.isNotBlank()) {
             editor.putString(KEY_USERNAME, session.username)
+            editor.putString("username_for_${session.email}", session.username)
         }
         editor.apply()
 

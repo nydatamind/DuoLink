@@ -91,8 +91,8 @@ fun LoginScreen(
         val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
         if (!accountName.isNullOrBlank()) {
             authManager.signInWithGoogle(email = accountName)
-            val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
-            Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back", Toast.LENGTH_SHORT).show()
+            val isNew = !authManager.hasUsername()
+            Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back, @${authManager.getUsername()}", Toast.LENGTH_SHORT).show()
             onLoginSuccess(isNew)
         }
     }
@@ -130,8 +130,8 @@ fun LoginScreen(
             val googleId = account?.id ?: ""
             if (email.isNotBlank()) {
                 authManager.signInWithGoogle(email = email, googleId = googleId)
-                val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
-                Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back", Toast.LENGTH_SHORT).show()
+                val isNew = !authManager.hasUsername()
+                Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back, @${authManager.getUsername()}", Toast.LENGTH_SHORT).show()
                 onLoginSuccess(isNew)
             } else {
                 launchSystemAccountChooser()
@@ -376,10 +376,10 @@ fun LoginScreen(
                             }
 
                             authManager.signInWithGoogle(email = trimmed)
-                            val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
+                            val isNew = !authManager.hasUsername()
                             Toast.makeText(
                                 context,
-                                if (isNew) "Account connected. Set username next." else "Welcome back",
+                                if (isNew) "Account connected. Set username next." else "Welcome back, @${authManager.getUsername()}",
                                 Toast.LENGTH_SHORT
                             ).show()
                             onLoginSuccess(isNew)

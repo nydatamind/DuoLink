@@ -36,6 +36,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -97,6 +98,10 @@ fun SettingsScreen(
     var showClearAllHistoryDialog by remember { mutableStateOf(false) }
     var showEditNameDialog by remember { mutableStateOf(false) }
     var newDisplayName by remember { mutableStateOf(pairingState?.peerDisplayName ?: "") }
+
+    var showEditMyUsernameDialog by remember { mutableStateOf(false) }
+    var myCurrentUsername by remember { mutableStateOf(app.authManager.getUsername() ?: "user") }
+    var editingMyUsername by remember { mutableStateOf(myCurrentUsername) }
 
     var availableUpdate by remember { mutableStateOf<UpdateInfo?>(null) }
     var isCheckingUpdate by remember { mutableStateOf(false) }
@@ -160,6 +165,40 @@ fun SettingsScreen(
                             lineHeight = 17.sp
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Text(
+                        text = "Your Username",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = DuoLinkTextMuted
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "@$myCurrentUsername",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DuoLinkTextWhite
+                        )
+
+                        TextButton(onClick = {
+                            editingMyUsername = myCurrentUsername
+                            showEditMyUsernameDialog = true
+                        }) {
+                            Text("Change", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Text(
+                        text = "Your unique identity for pairing and connecting.",
+                        fontSize = 11.sp,
+                        color = DuoLinkTextMuted
+                    )
 
                     Spacer(modifier = Modifier.height(14.dp))
 
@@ -661,6 +700,84 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEditNameDialog = false }) {
+                    Text("Cancel", color = DuoLinkTextMuted)
+                }
+            }
+        )
+    }
+
+    if (showEditMyUsernameDialog) {
+        var isCheckingNewUser by remember { mutableStateOf(false) }
+        var changeError by remember { mutableStateOf<String?>(null) }
+
+        AlertDialog(
+            onDismissRequest = { showEditMyUsernameDialog = false },
+            title = { Text("Change Username", color = DuoLinkTextWhite, fontWeight = FontWeight.Bold) },
+            containerColor = DuoLinkSurface,
+            text = {
+                Column {
+                    Text(
+                        "Enter your new username (3–20 letters, numbers, underscores).",
+                        fontSize = 13.sp,
+                        color = DuoLinkTextMuted
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = editingMyUsername,
+                        onValueChange = {
+                            val filtered = it.filter { c -> c.isLetterOrDigit() || c == '_' }.lowercase()
+                            if (filtered.length <= 20) {
+                                editingMyUsername = filtered
+                                changeError = null
+                            }
+                        },
+                        label = { Text("New Username") },
+                        prefix = { Text("@", color = DuoLinkRedPrimary) },
+                        isError = changeError != null,
+                        supportingText = changeError?.let { { Text(it, color = DuoLinkRedPrimary) } },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val clean = editingMyUsername.trim().lowercase()
+                        if (clean.length < 3) {
+                            changeError = "Must be at least 3 characters"
+                            return@Button
+                        }
+                        if (clean == myCurrentUsername) {
+                            showEditMyUsernameDialog = false
+                            return@Button
+                        }
+                        isCheckingNewUser = true
+                        scope.launch {
+                            val avail = app.profileManager.checkUsernameAvailability(clean).getOrNull() ?: true
+                            if (!avail) {
+                                isCheckingNewUser = false
+                                changeError = "Username '@$clean' is taken"
+                            } else {
+                                app.profileManager.registerUsername(clean)
+                                myCurrentUsername = clean
+                                isCheckingNewUser = false
+                                showEditMyUsernameDialog = false
+                                Toast.makeText(context, "Username changed to @$clean", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                ) {
+                    if (isCheckingNewUser) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditMyUsernameDialog = false }) {
                     Text("Cancel", color = DuoLinkTextMuted)
                 }
             }
