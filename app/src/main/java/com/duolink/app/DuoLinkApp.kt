@@ -33,6 +33,8 @@ class DuoLinkApp : Application() {
         private set
     lateinit var authManager: SupabaseAuthManager
         private set
+    lateinit var profileManager: com.duolink.app.data.auth.SupabaseProfileManager
+        private set
     lateinit var signalingClient: SignalingClient
         private set
     lateinit var pairingRepository: PairingRepository
@@ -69,6 +71,14 @@ class DuoLinkApp : Application() {
         vibrationAlertManager = VibrationAlertManager(this)
         owlEyeStateManager = OwlEyeStateManager(this, signalingClient)
         pairingRepository = PairingRepository(cryptoManager, database, signalingClient)
+        profileManager = com.duolink.app.data.auth.SupabaseProfileManager(
+            this,
+            authManager,
+            cryptoManager,
+            database,
+            signalingClient,
+            pairingRepository
+        )
         chatRepository = ChatRepository(this, database, cryptoManager, signalingClient)
         callRepository = CallRepository(this, database, signalingClient)
         voiceRecorderManager = VoiceRecorderManager(this)

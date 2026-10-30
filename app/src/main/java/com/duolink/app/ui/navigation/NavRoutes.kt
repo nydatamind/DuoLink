@@ -3,6 +3,7 @@ package com.duolink.app.ui.navigation
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Login : Screen("login")
+    object UsernameSetup : Screen("username_setup")
     object Permissions : Screen("permissions")
     object Onboarding : Screen("onboarding")
     object Pairing : Screen("pairing")

@@ -28,7 +28,8 @@ data class UserSession(
     val email: String, // Kept STRICTLY INTERNAL, never sent to peer
     val accessToken: String,
     val refreshToken: String,
-    val authenticatedAt: Long
+    val authenticatedAt: Long,
+    val username: String = ""
 )
 
 class SupabaseAuthManager(private val context: Context) {
@@ -41,6 +42,7 @@ class SupabaseAuthManager(private val context: Context) {
         private const val KEY_ACCESS_TOKEN = "auth_access_token"
         private const val KEY_REFRESH_TOKEN = "auth_refresh_token"
         private const val KEY_AUTH_TIME = "auth_time"
+        private const val KEY_USERNAME = "auth_username"
 
         const val REDIRECT_URI = "duolink://auth/callback"
     }
@@ -61,6 +63,7 @@ class SupabaseAuthManager(private val context: Context) {
         val token = prefs.getString(KEY_ACCESS_TOKEN, null)
         val refresh = prefs.getString(KEY_REFRESH_TOKEN, "") ?: ""
         val time = prefs.getLong(KEY_AUTH_TIME, 0L)
+        val username = prefs.getString(KEY_USERNAME, "") ?: ""
 
         if (uid != null && email != null && token != null) {
             _currentSession.value = UserSession(
@@ -68,7 +71,8 @@ class SupabaseAuthManager(private val context: Context) {
                 email = email,
                 accessToken = token,
                 refreshToken = refresh,
-                authenticatedAt = time
+                authenticatedAt = time,
+                username = username
             )
         }
     }
@@ -76,6 +80,22 @@ class SupabaseAuthManager(private val context: Context) {
     fun isAuthenticated(): Boolean = _currentSession.value != null
 
     fun getInternalUserId(): String? = _currentSession.value?.userId
+
+    fun getUsername(): String? {
+        val sessionUser = _currentSession.value?.username
+        if (!sessionUser.isNullOrBlank()) return sessionUser
+        return prefs.getString(KEY_USERNAME, null)
+    }
+
+    fun setUsername(username: String) {
+        prefs.edit().putString(KEY_USERNAME, username.trim()).apply()
+        _currentSession.value = _currentSession.value?.copy(username = username.trim())
+    }
+
+    fun hasUsername(): Boolean {
+        val u = getUsername()
+        return !u.isNullOrBlank()
+    }
 
     /**
      * Warning: Internal only. Never expose to peer or UI screens.
@@ -186,25 +206,30 @@ class SupabaseAuthManager(private val context: Context) {
     fun signInWithGoogleAccount(googleEmail: String): UserSession {
         val existingUid = prefs.getString(KEY_USER_ID, null)
         val userId = existingUid ?: UUID.nameUUIDFromBytes(googleEmail.toByteArray()).toString()
+        val username = prefs.getString(KEY_USERNAME, "") ?: ""
         val session = UserSession(
             userId = userId,
             email = googleEmail,
             accessToken = "token_google_${UUID.randomUUID()}",
             refreshToken = "refresh_${UUID.randomUUID()}",
-            authenticatedAt = System.currentTimeMillis()
+            authenticatedAt = System.currentTimeMillis(),
+            username = username
         )
         saveSession(session)
         return session
     }
 
     private fun saveSession(session: UserSession) {
-        prefs.edit()
+        val editor = prefs.edit()
             .putString(KEY_USER_ID, session.userId)
             .putString(KEY_INTERNAL_EMAIL, session.email)
             .putString(KEY_ACCESS_TOKEN, session.accessToken)
             .putString(KEY_REFRESH_TOKEN, session.refreshToken)
             .putLong(KEY_AUTH_TIME, session.authenticatedAt)
-            .apply()
+        if (session.username.isNotBlank()) {
+            editor.putString(KEY_USERNAME, session.username)
+        }
+        editor.apply()
 
         _currentSession.value = session
     }

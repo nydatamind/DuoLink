@@ -33,6 +33,7 @@ import com.duolink.app.ui.screens.PairingScreen
 import com.duolink.app.ui.screens.PermissionsSetupScreen
 import com.duolink.app.ui.screens.SettingsScreen
 import com.duolink.app.ui.screens.SplashScreen
+import com.duolink.app.ui.screens.UsernameSetupScreen
 import com.duolink.app.ui.theme.DuoLinkTheme
 import com.duolink.app.ui.updater.UpdateDialog
 import kotlinx.coroutines.Dispatchers
@@ -116,7 +117,11 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                 onNavigateToHome = { navigateTo(Screen.Home) },
                 onNavigateToOnboarding = {
                     if (app.authManager.isAuthenticated()) {
-                        navigateTo(Screen.Permissions)
+                        if (!app.authManager.hasUsername()) {
+                            navigateTo(Screen.UsernameSetup)
+                        } else {
+                            navigateTo(Screen.Permissions)
+                        }
                     } else {
                         navigateTo(Screen.Login)
                     }
@@ -125,7 +130,18 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         }
         Screen.Login -> {
             LoginScreen(
-                onLoginSuccess = {
+                onLoginSuccess = { isNewSignup ->
+                    if (isNewSignup || !app.authManager.hasUsername()) {
+                        navigateTo(Screen.UsernameSetup)
+                    } else {
+                        navigateTo(Screen.Permissions)
+                    }
+                }
+            )
+        }
+        Screen.UsernameSetup -> {
+            UsernameSetupScreen(
+                onUsernameCreated = {
                     navigateTo(Screen.Permissions)
                 }
             )
@@ -137,7 +153,7 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                         if (app.pairingRepository.isPaired()) {
                             navigateTo(Screen.Home)
                         } else {
-                            navigateTo(Screen.Onboarding)
+                            navigateTo(Screen.Pairing)
                         }
                     }
                 },

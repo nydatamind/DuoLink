@@ -8,10 +8,13 @@
 
 - **Official GitHub Repository**: [`https://github.com/nydatamind/DuoLink`](https://github.com/nydatamind/DuoLink)
 - **Official Releases**: [`https://github.com/nydatamind/DuoLink/releases`](https://github.com/nydatamind/DuoLink/releases)
-- **Production APK**: [`DuoLink.apk`](file:///d:/My_Projects/BlueTalk/DuoLink.apk) (71.07 MB, signed production release build with bundled Emoji2 font)
-- **Cryptographic SHA-256**: `191921a03b7bbde0743282ca8c3940898a80c626c620254bf2d7f6da4891ffeb`
+- **Production APK**: [`DuoLink.apk`](file:///d:/My_Projects/BlueTalk/DuoLink.apk) (71.1 MB, signed production release build with bundled Emoji2 font)
+- **Cryptographic SHA-256**: `516c6691fd4c8c34007e446226b01fdb6d4bf38fbbc05ce1f49826db78aeebcf`
 - **Application Label**: `DuoLink`
 - **Application ID / Package**: `com.duolink.app`
+- **Username Discovery & Mutual Pairing**: Symmetrical username-based search (`@username`) and instant real-time pairing request/accept. Zero phone-role or first/second device selection.
+- **Separate Sign In & Sign Up**: Clean segmented switcher with mandatory unique username setup on first signup.
+- **Minimalist Permissions UI**: Clean, streamlined cards with direct Android runtime permission contracts and Allowed/Not Allowed badges. Zero story paragraphs.
 - **Telegram / iOS-Style Emoji Engine**: Bundled Google Noto Color Emoji (`androidx.emoji2:emoji2-bundled`) guaranteeing uniform emoji rendering across all Android versions without broken glyphs.
 - **In-App Auto-Updater**: Native GitHub Releases updater with SHA-256 hash validation and certificate matching.
 - **Official 3D Mascot**: Premium, original **DuoLink Owl** with dark charcoal plumage and crimson red accents (`duolink_owl_logo.png`).

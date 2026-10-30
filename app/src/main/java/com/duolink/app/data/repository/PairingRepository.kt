@@ -193,6 +193,49 @@ class PairingRepository(
         }
     }
 
+    suspend fun establishMutualPairing(
+        peerDeviceId: String,
+        peerUsername: String,
+        peerPublicKeyBase64: String,
+        privateNicknameForPartner: String,
+        myInternalGoogleUserId: String,
+        signalingUrl: String = SignalingClient.DEFAULT_SUPABASE_URL
+    ): Result<PairingEntity> {
+        return try {
+            if (peerDeviceId == cryptoManager.getDeviceId()) {
+                return Result.failure(IllegalArgumentException("Cannot pair with your own device identity."))
+            }
+
+            val peerPubKey = cryptoManager.decodePublicKey(peerPublicKeyBase64)
+            val sharedSecretKey = cryptoManager.deriveSharedSessionKey(peerPubKey)
+            val sharedKeyEncryptedBase64 = cryptoManager.encryptLocalString(
+                Base64.encodeToString(sharedSecretKey.encoded, Base64.NO_WRAP)
+            )
+
+            val nickname = privateNicknameForPartner.ifBlank { peerUsername.ifBlank { "Partner" } }
+            val now = System.currentTimeMillis()
+
+            val pairing = PairingEntity(
+                id = 1,
+                peerDeviceId = peerDeviceId,
+                peerDisplayName = nickname,
+                peerPublicKeyBase64 = peerPublicKeyBase64,
+                sharedKeyEncryptedBase64 = sharedKeyEncryptedBase64,
+                pairedAt = now,
+                isConfirmed = true,
+                signalingServerUrl = signalingUrl,
+                myGoogleUserId = myInternalGoogleUserId,
+                peerGoogleUserId = ""
+            )
+            database.pairingDao().savePairing(pairing)
+            signalingClient.connect(signalingUrl, cryptoManager.getDeviceId())
+
+            Result.success(pairing)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun updateLocalNickname(newNickname: String) {
         database.pairingDao().updatePeerNickname(newNickname.trim())
     }

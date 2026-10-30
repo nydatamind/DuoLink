@@ -6,11 +6,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,17 +22,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryAlert
-import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -86,33 +89,24 @@ fun PermissionsSetupScreen(
             } else true
         )
     }
-    var hasBluetooth by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-            } else true
-        )
-    }
-    var isBatteryExempt by remember {
-        mutableStateOf(checkBatteryExemption(context))
+
+    // Android runtime permission launchers - directly request system dialogs
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCamera = isGranted
     }
 
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { results ->
-        hasCamera = results[Manifest.permission.CAMERA] ?: hasCamera
-        hasMic = results[Manifest.permission.RECORD_AUDIO] ?: hasMic
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            hasNotifications = results[Manifest.permission.POST_NOTIFICATIONS] ?: hasNotifications
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            hasBluetooth = results[Manifest.permission.BLUETOOTH_CONNECT] ?: hasBluetooth
-        }
+    val micLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasMic = isGranted
     }
 
-    // Refresh state on resume
-    LaunchedEffect(Unit) {
-        isBatteryExempt = checkBatteryExemption(context)
+    val notificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasNotifications = isGranted
     }
 
     Column(
@@ -121,8 +115,7 @@ fun PermissionsSetupScreen(
             .background(DuoLinkCharcoalBg)
     ) {
         DuoLinkTopBar(
-            title = "Permission Setup",
-            subtitle = "Security & Reliability",
+            title = "Permissions",
             onBackClick = onBackClick
         )
 
@@ -130,195 +123,212 @@ fun PermissionsSetupScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            OwlMascotView(
-                state = OwlEyeState.OPEN,
-                size = 72.dp
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Small DuoLink owl mascot
+                OwlMascotView(
+                    state = OwlEyeState.OPEN,
+                    size = 54.dp
+                )
 
-            Text(
-                text = "Required DuoLink Permissions",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = DuoLinkTextWhite
-            )
+                Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = "DuoLink is an encrypted peer-to-peer communication app. It never displays visible notification previews or audible ringtones. To ensure real-time calls and repeating silent vibrations work reliably, please grant the following permissions:",
-                fontSize = 13.sp,
-                color = DuoLinkTextMuted,
-                lineHeight = 18.sp
-            )
+                Text(
+                    text = "Permissions",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = DuoLinkTextWhite
+                    )
+                )
 
-            // 1. SILENT VIBRATION & NOTIFICATIONS
-            PermissionItemCard(
-                icon = Icons.Default.Vibration,
-                title = "Silent Vibration & Notifications",
-                description = "Enables hardware-level repeating vibration alerts when a new message or incoming call arrives, without audible ringtones or visible lock-screen previews.",
-                isGranted = hasNotifications,
-                onGrantClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        permissionsLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Tap any item to grant access",
+                    fontSize = 13.sp,
+                    color = DuoLinkTextMuted
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // MICROPHONE CARD
+                SimplePermissionRow(
+                    icon = Icons.Default.Mic,
+                    title = "Microphone",
+                    subtitle = "Voice notes & encrypted calls",
+                    isAllowed = hasMic,
+                    onClick = {
+                        if (!hasMic) micLauncher.launch(Manifest.permission.RECORD_AUDIO)
                     }
-                }
-            )
+                )
 
-            // 2. MICROPHONE
-            PermissionItemCard(
-                icon = Icons.Default.Mic,
-                title = "Microphone Access",
-                description = "Required for crystal-clear end-to-end encrypted voice calls and interactive voice recordings.",
-                isGranted = hasMic,
-                onGrantClick = {
-                    permissionsLauncher.launch(arrayOf(Manifest.permission.RECORD_AUDIO))
-                }
-            )
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // 3. CAMERA
-            PermissionItemCard(
-                icon = Icons.Default.CameraAlt,
-                title = "Camera Access",
-                description = "Used strictly for scanning your partner's secure pairing QR code and two-way encrypted HD video calling.",
-                isGranted = hasCamera,
-                onGrantClick = {
-                    permissionsLauncher.launch(arrayOf(Manifest.permission.CAMERA))
-                }
-            )
-
-            // 4. BLUETOOTH & AUDIO ROUTING
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                PermissionItemCard(
-                    icon = Icons.Default.Bluetooth,
-                    title = "Bluetooth & Audio Routing",
-                    description = "Enables seamless switching between handset, speakerphone, and Bluetooth earbuds during active voice and video calls.",
-                    isGranted = hasBluetooth,
-                    onGrantClick = {
-                        permissionsLauncher.launch(arrayOf(Manifest.permission.BLUETOOTH_CONNECT))
+                // CAMERA CARD
+                SimplePermissionRow(
+                    icon = Icons.Default.CameraAlt,
+                    title = "Camera",
+                    subtitle = "Video calls & QR pairing",
+                    isAllowed = hasCamera,
+                    onClick = {
+                        if (!hasCamera) cameraLauncher.launch(Manifest.permission.CAMERA)
                     }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // NOTIFICATIONS CARD
+                SimplePermissionRow(
+                    icon = Icons.Default.Notifications,
+                    title = "Notifications",
+                    subtitle = "Background call & message alerts",
+                    isAllowed = hasNotifications,
+                    onClick = {
+                        if (!hasNotifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // VIBRATION CARD (Hardware enabled)
+                SimplePermissionRow(
+                    icon = Icons.Default.Vibration,
+                    title = "Vibration",
+                    subtitle = "Silent hardware alert motor",
+                    isAllowed = true,
+                    isFixed = true,
+                    onClick = {}
                 )
             }
 
-            // 5. BATTERY OPTIMIZATION EXEMPTION
-            PermissionItemCard(
-                icon = Icons.Default.BatteryAlert,
-                title = "Background Battery Exemption",
-                description = "Prevents Android from putting DuoLink's peer-to-peer link to sleep, guaranteeing repeating vibration alerts even when your phone is locked or in your pocket.",
-                isGranted = isBatteryExempt,
-                onGrantClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        try {
-                            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                            }
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                            context.startActivity(intent)
-                        }
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // CONTINUE BUTTON
-            Button(
-                onClick = onContinue,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                    .padding(top = 32.dp, bottom = 16.dp)
             ) {
-                Text(
-                    text = if (hasCamera && hasMic) "Continue to DuoLink" else "Proceed with Current Permissions",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = Color.White
-                )
+                Button(
+                    onClick = onContinue,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                ) {
+                    Text(
+                        text = "Continue",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Optional Settings link if user needs to change OS settings
+                TextButton(
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        tint = DuoLinkTextMuted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "System App Settings",
+                        color = DuoLinkTextMuted,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }
 }
 
-private fun checkBatteryExemption(context: Context): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        powerManager.isIgnoringBatteryOptimizations(context.packageName)
-    } else true
-}
-
 @Composable
-private fun PermissionItemCard(
+private fun SimplePermissionRow(
     icon: ImageVector,
     title: String,
-    description: String,
-    isGranted: Boolean,
-    onGrantClick: () -> Unit
+    subtitle: String,
+    isAllowed: Boolean,
+    isFixed: Boolean = false,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
+        colors = CardDefaults.cardColors(containerColor = DuoLinkSurface),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !isAllowed && !isFixed) { onClick() }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.Top
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .clip(CircleShape)
-                    .background(if (isGranted) Color(0xFF10B981).copy(alpha = 0.15f) else DuoLinkRedPrimary.copy(alpha = 0.15f)),
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(DuoLinkCharcoalBg),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isGranted) Icons.Default.CheckCircle else icon,
+                    imageVector = icon,
                     contentDescription = null,
-                    tint = if (isGranted) Color(0xFF10B981) else DuoLinkRedPrimary,
+                    tint = if (isAllowed) DuoLinkRedPrimary else DuoLinkTextMuted,
                     modifier = Modifier.size(22.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
                     color = DuoLinkTextWhite
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = description,
+                    text = subtitle,
                     fontSize = 12.sp,
-                    color = DuoLinkTextMuted,
-                    lineHeight = 16.sp
+                    color = DuoLinkTextMuted
                 )
-                Spacer(modifier = Modifier.height(10.dp))
-                if (isGranted) {
-                    Text(
-                        text = "✓ Granted & Active",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF10B981)
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        if (isAllowed) Color(0xFF4CAF50).copy(alpha = 0.15f)
+                        else DuoLinkRedPrimary.copy(alpha = 0.15f)
                     )
-                } else {
-                    OutlinedButton(
-                        onClick = onGrantClick,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Grant Permission", fontSize = 12.sp, color = DuoLinkRedPrimary)
-                    }
-                }
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+            ) {
+                Text(
+                    text = if (isAllowed) "Allowed" else "Not Allowed",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isAllowed) Color(0xFF4CAF50) else DuoLinkRedPrimary
+                )
             }
         }
     }
 }
-

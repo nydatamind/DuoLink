@@ -23,9 +23,12 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -169,53 +172,80 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                Text(
-                    text = partnerName,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = DuoLinkTextWhite
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = when (owlEyeState) {
-                        OwlEyeState.OPEN -> "● Active Now (Alert)"
-                        OwlEyeState.HALF -> "◐ Sleepy (Inactive recently)"
-                        OwlEyeState.CLOSED -> "○ Resting / Inactive"
-                    },
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = when (owlEyeState) {
-                        OwlEyeState.OPEN -> Color(0xFF10B981)
-                        OwlEyeState.HALF -> DuoLinkRedPrimary
-                        OwlEyeState.CLOSED -> DuoLinkTextMuted
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(DuoLinkCharcoalBg)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = DuoLinkRedPrimary,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
+                if (pairingState == null) {
                     Text(
-                        text = "End-to-End Encrypted (ECDH P-256)",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = DuoLinkTextMuted
+                        text = "No Partner Linked",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = DuoLinkTextWhite
+                        )
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Search your partner's username to connect your private link.",
+                        fontSize = 12.sp,
+                        color = DuoLinkTextMuted,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = onNavigateToPairing,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                    ) {
+                        Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Color.White)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Connect Partner", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Text(
+                        text = partnerName,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = DuoLinkTextWhite
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = when (owlEyeState) {
+                            OwlEyeState.OPEN -> "● Active Now (Alert)"
+                            OwlEyeState.HALF -> "◐ Sleepy (Inactive recently)"
+                            OwlEyeState.CLOSED -> "○ Resting / Inactive"
+                        },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = when (owlEyeState) {
+                            OwlEyeState.OPEN -> Color(0xFF10B981)
+                            OwlEyeState.HALF -> DuoLinkRedPrimary
+                            OwlEyeState.CLOSED -> DuoLinkTextMuted
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(DuoLinkCharcoalBg)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = DuoLinkRedPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "End-to-End Encrypted (ECDH P-256)",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = DuoLinkTextMuted
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

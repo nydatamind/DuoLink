@@ -17,6 +17,8 @@ data class SignalingMessage(
     val recipientDeviceId: String? = null,
     val targetDeviceId: String? = null,
     val peerDeviceId: String? = null,
+    val username: String? = null,
+    val targetUsername: String? = null,
     val displayName: String? = null, // Custom local nickname, never Google email or profile
     val googleUserId: String? = null, // Internal account ID only
     val publicKeyBase64: String? = null,

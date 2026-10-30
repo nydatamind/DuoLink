@@ -18,7 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material3.Button
@@ -128,13 +128,13 @@ fun OnboardingScreen(
             colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
         ) {
             Icon(
-                imageVector = Icons.Default.QrCodeScanner,
+                imageVector = Icons.Default.PersonAdd,
                 contentDescription = null,
                 tint = Color.White
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Begin Secure Pairing",
+                text = "Connect Your Partner",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
