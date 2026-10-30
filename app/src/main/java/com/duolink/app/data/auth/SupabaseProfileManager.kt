@@ -176,8 +176,9 @@ class SupabaseProfileManager(
                     }
 
                     "PAIR_REQUEST" -> {
-                        val target = msg.targetUsername?.lowercase()
-                        if (target == myUsername) {
+                        val target = msg.targetUsername?.removePrefix("@")?.trim()?.lowercase() ?: ""
+                        val isForMe = target == myUsername || msg.recipientDeviceId == myDeviceId
+                        if (isForMe) {
                             val senderName = msg.username ?: "Partner"
                             val senderDevId = msg.deviceId ?: ""
                             val senderKey = msg.publicKeyBase64 ?: ""
@@ -202,16 +203,17 @@ class SupabaseProfileManager(
                     }
 
                     "PAIR_ACCEPT" -> {
-                        val target = msg.targetUsername?.lowercase()
-                        if (target == myUsername) {
+                        val target = msg.targetUsername?.removePrefix("@")?.trim()?.lowercase() ?: ""
+                        val isForMe = target == myUsername || msg.recipientDeviceId == myDeviceId
+                        if (isForMe) {
                             val currentOutgoing = _outgoingRequest.value
-                            if (currentOutgoing != null && msg.deviceId == currentOutgoing.senderDeviceId) {
-                                // Establish pairing on sender side
-                                val peerPubKey = msg.publicKeyBase64 ?: currentOutgoing.senderPublicKey
-                                val peerName = msg.username ?: currentOutgoing.receiverUsername
+                            val peerDevId = msg.deviceId ?: currentOutgoing?.senderDeviceId ?: ""
+                            val peerPubKey = msg.publicKeyBase64 ?: currentOutgoing?.senderPublicKey ?: ""
+                            val peerName = msg.username ?: currentOutgoing?.receiverUsername ?: "Partner"
 
+                            if (peerDevId.isNotBlank() && peerPubKey.isNotBlank()) {
                                 pairingRepository.establishMutualPairing(
-                                    peerDeviceId = msg.deviceId,
+                                    peerDeviceId = peerDevId,
                                     peerUsername = peerName,
                                     peerPublicKeyBase64 = peerPubKey,
                                     privateNicknameForPartner = peerName,
@@ -224,19 +226,38 @@ class SupabaseProfileManager(
                         }
                     }
 
-                    "PAIR_REJECT" -> {
-                        val target = msg.targetUsername?.lowercase()
-                        if (target == myUsername) {
-                            val currentOutgoing = _outgoingRequest.value
-                            if (currentOutgoing != null && (msg.username == currentOutgoing.receiverUsername || msg.deviceId == currentOutgoing.senderDeviceId)) {
-                                saveOutgoingRequest(null)
+                    "PAIR_CONFIRM" -> {
+                        val isForMe = msg.recipientDeviceId == myDeviceId
+                        if (isForMe) {
+                            val peerDevId = msg.deviceId ?: ""
+                            val peerPubKey = msg.publicKeyBase64 ?: ""
+                            val peerName = msg.username ?: "Partner"
+
+                            if (peerDevId.isNotBlank() && peerPubKey.isNotBlank()) {
+                                pairingRepository.establishMutualPairing(
+                                    peerDeviceId = peerDevId,
+                                    peerUsername = peerName,
+                                    peerPublicKeyBase64 = peerPubKey,
+                                    privateNicknameForPartner = peerName,
+                                    myInternalGoogleUserId = authManager.getInternalUserId() ?: ""
+                                )
+                                _pairingSuccessEvent.tryEmit(Unit)
                             }
                         }
                     }
 
+                    "PAIR_REJECT" -> {
+                        val target = msg.targetUsername?.removePrefix("@")?.trim()?.lowercase() ?: ""
+                        val isForMe = target == myUsername || msg.recipientDeviceId == myDeviceId
+                        if (isForMe) {
+                            saveOutgoingRequest(null)
+                        }
+                    }
+
                     "PAIR_CANCEL" -> {
-                        val target = msg.targetUsername?.lowercase()
-                        if (target == myUsername) {
+                        val target = msg.targetUsername?.removePrefix("@")?.trim()?.lowercase() ?: ""
+                        val isForMe = target == myUsername || msg.recipientDeviceId == myDeviceId
+                        if (isForMe) {
                             val senderDev = msg.deviceId
                             _incomingRequests.value = _incomingRequests.value.filter { it.senderDeviceId != senderDev }
                         }
@@ -419,7 +440,11 @@ class SupabaseProfileManager(
         saveOutgoingRequest(req)
 
         // Broadcast over Supabase Realtime
-        signalingClient.connect(SignalingClient.DEFAULT_SUPABASE_URL, myDeviceId)
+        if (signalingClient.state.value != com.duolink.app.data.signaling.SignalingState.REGISTERED &&
+            signalingClient.state.value != com.duolink.app.data.signaling.SignalingState.CONNECTED) {
+            signalingClient.connect(SignalingClient.DEFAULT_SUPABASE_URL, myDeviceId)
+            kotlinx.coroutines.delay(300)
+        }
         signalingClient.send(
             SignalingMessage(
                 type = "PAIR_REQUEST",
@@ -480,7 +505,11 @@ class SupabaseProfileManager(
 
         if (result.isSuccess) {
             // Broadcast acceptance to sender
-            signalingClient.connect(SignalingClient.DEFAULT_SUPABASE_URL, myDeviceId)
+            if (signalingClient.state.value != com.duolink.app.data.signaling.SignalingState.REGISTERED &&
+                signalingClient.state.value != com.duolink.app.data.signaling.SignalingState.CONNECTED) {
+                signalingClient.connect(SignalingClient.DEFAULT_SUPABASE_URL, myDeviceId)
+                kotlinx.coroutines.delay(300)
+            }
             signalingClient.send(
                 SignalingMessage(
                     type = "PAIR_ACCEPT",

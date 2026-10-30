@@ -131,6 +131,7 @@ class PairingRepository(
                 deviceId = cryptoManager.getDeviceId(),
                 recipientDeviceId = qrPayload.deviceId,
                 googleUserId = myInternalGoogleUserId,
+                username = myInternalGoogleUserId,
                 publicKeyBase64 = cryptoManager.getLocalPublicKeyBase64(),
                 token = qrPayload.token,
                 signature = confirmationSignature

@@ -276,13 +276,7 @@ fun LoginScreen(
                     onClick = {
                         isSigningInGoogle = true
                         try {
-                            googleSignInClient.signOut().addOnCompleteListener {
-                                try {
-                                    googleSignInLauncher.launch(googleSignInClient.signInIntent)
-                                } catch (e: Exception) {
-                                    launchSystemAccountChooser()
-                                }
-                            }
+                            googleSignInLauncher.launch(googleSignInClient.signInIntent)
                         } catch (e: Exception) {
                             launchSystemAccountChooser()
                         }
@@ -307,7 +301,7 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = if (selectedAuthMode == 0) "Sign in with Google" else "Sign up with Google",
+                            text = "Continue with Google",
                             color = Color(0xFF1F2937),
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp

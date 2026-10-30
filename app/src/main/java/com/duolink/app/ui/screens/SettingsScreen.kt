@@ -408,14 +408,14 @@ fun SettingsScreen(
                 }
             }
 
-            // DIAGNOSTICS & ABOUT
+            // DEDICATED APP UPDATES CARD
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Diagnostics",
+                        text = "App Updates",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -423,11 +423,11 @@ fun SettingsScreen(
                     SettingsRowItem(
                         icon = Icons.Default.SystemUpdate,
                         title = "Check for Updates",
-                        subtitle = if (isCheckingUpdate) "Checking releases..." else "Version ${BuildConfig.VERSION_NAME}",
+                        subtitle = if (isCheckingUpdate) "Checking GitHub releases..." else "Version ${BuildConfig.VERSION_NAME} • Lifetime Free",
                         onClick = {
                             if (isCheckingUpdate) return@SettingsRowItem
                             isCheckingUpdate = true
-                            Toast.makeText(context, "Checking for updates...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Checking for latest DuoLink release...", Toast.LENGTH_SHORT).show()
                             scope.launch {
                                 val result = withContext(Dispatchers.IO) {
                                     updateChecker.checkForUpdate(ignoreDismissed = true)
@@ -439,21 +439,33 @@ fun SettingsScreen(
                                 } else {
                                     val err = result.exceptionOrNull()
                                     if (err != null) {
-                                        Toast.makeText(context, "Could not check updates: ${err.message}", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "Update check failed: ${err.message}", Toast.LENGTH_LONG).show()
                                     } else {
-                                        Toast.makeText(context, "DuoLink is up to date", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "DuoLink is up to date (v${BuildConfig.VERSION_NAME})", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
                         }
                     )
+                }
+            }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+            // DIAGNOSTICS & ABOUT
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Diagnostics & Info",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     SettingsRowItem(
                         icon = Icons.Default.Security,
                         title = "Permissions",
-                        subtitle = "Battery and background permissions",
+                        subtitle = "Calls, mic, camera, and overlay",
                         onClick = onNavigateToPermissions
                     )
 

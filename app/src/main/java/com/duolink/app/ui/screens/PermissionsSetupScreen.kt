@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Mic
@@ -89,6 +90,20 @@ fun PermissionsSetupScreen(
             } else true
         )
     }
+    var hasOverlay by remember {
+        mutableStateOf(Settings.canDrawOverlays(context))
+    }
+
+    val multiplePermissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        hasMic = results[Manifest.permission.RECORD_AUDIO] ?: (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
+        hasCamera = results[Manifest.permission.CAMERA] ?: (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            hasNotifications = results[Manifest.permission.POST_NOTIFICATIONS] ?: (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED)
+        }
+        hasOverlay = Settings.canDrawOverlays(context)
+    }
 
     // Android runtime permission launchers - directly request system dialogs
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -108,6 +123,14 @@ fun PermissionsSetupScreen(
     ) { isGranted ->
         hasNotifications = isGranted
     }
+
+    val overlayLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        hasOverlay = Settings.canDrawOverlays(context)
+    }
+
+    val allRuntimeGranted = hasMic && hasCamera && hasNotifications
 
     Column(
         modifier = Modifier
@@ -150,12 +173,53 @@ fun PermissionsSetupScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Tap any item to grant access",
+                    text = "Grant permissions for calls, voice notes, and alerts",
                     fontSize = 13.sp,
                     color = DuoLinkTextMuted
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // QUICK GRANT ALL BUTTON
+                Button(
+                    onClick = {
+                        val needed = buildList {
+                            if (!hasMic) add(Manifest.permission.RECORD_AUDIO)
+                            if (!hasCamera) add(Manifest.permission.CAMERA)
+                            if (!hasNotifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                add(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        }.toTypedArray()
+
+                        if (needed.isNotEmpty()) {
+                            multiplePermissionsLauncher.launch(needed)
+                        } else if (!hasOverlay) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            overlayLauncher.launch(intent)
+                        } else {
+                            onContinue()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (allRuntimeGranted && hasOverlay) Color(0xFF10B981) else DuoLinkRedPrimary
+                    )
+                ) {
+                    Text(
+                        text = if (allRuntimeGranted && hasOverlay) "All Permissions Granted" else "Grant All Permissions",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // MICROPHONE CARD
                 SimplePermissionRow(
@@ -198,11 +262,28 @@ fun PermissionsSetupScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // DISPLAY OVER OTHER APPS
+                SimplePermissionRow(
+                    icon = Icons.Default.Call,
+                    title = "Display Over Other Apps",
+                    subtitle = "Full-screen incoming call popups",
+                    isAllowed = hasOverlay,
+                    onClick = {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        overlayLauncher.launch(intent)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 // VIBRATION CARD (Hardware enabled)
                 SimplePermissionRow(
                     icon = Icons.Default.Vibration,
                     title = "Vibration",
-                    subtitle = "Silent alerts",
+                    subtitle = "Silent alerts (Lifetime Free)",
                     isAllowed = true,
                     isFixed = true,
                     onClick = {}

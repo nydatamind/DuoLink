@@ -118,11 +118,38 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
     fun navigateBack() {
         if (backStack.size > 1) {
             backStack.removeAt(backStack.size - 1)
+        } else {
+            when (currentScreen) {
+                Screen.Pairing -> {
+                    scope.launch {
+                        if (app.pairingRepository.isPaired()) {
+                            navigateTo(Screen.Home, clearStack = true)
+                        } else {
+                            navigateTo(Screen.Login, clearStack = true)
+                        }
+                    }
+                }
+                Screen.Chat, Screen.Call, Screen.CallHistory, Screen.Settings -> {
+                    navigateTo(Screen.Home, clearStack = true)
+                }
+                Screen.Diagnostics, Screen.About, Screen.Permissions -> {
+                    navigateTo(Screen.Settings)
+                }
+                Screen.UsernameSetup -> {
+                    navigateTo(Screen.Login, clearStack = true)
+                }
+                Screen.Home, Screen.Login -> {
+                    (context as? android.app.Activity)?.moveTaskToBack(true)
+                }
+                else -> {
+                    (context as? android.app.Activity)?.finish()
+                }
+            }
         }
     }
 
     // Official Android Back Gesture / Button Handler
-    BackHandler(enabled = backStack.size > 1) {
+    BackHandler(enabled = true) {
         navigateBack()
     }
 
@@ -133,12 +160,15 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                     navigateTo(Screen.Home, clearStack = true)
                 },
                 onNavigateToOnboarding = {
+                    backStack.clear()
                     if (!app.authManager.isAuthenticated()) {
-                        navigateTo(Screen.Login, clearStack = true)
+                        backStack.add(Screen.Login)
                     } else if (!app.authManager.hasUsername()) {
-                        navigateTo(Screen.UsernameSetup, clearStack = true)
+                        backStack.add(Screen.Login)
+                        backStack.add(Screen.UsernameSetup)
                     } else {
-                        navigateTo(Screen.Pairing, clearStack = true)
+                        backStack.add(Screen.Login)
+                        backStack.add(Screen.Pairing)
                     }
                 }
             )
@@ -147,9 +177,9 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
             LoginScreen(
                 onLoginSuccess = { isNewSignup ->
                     if (isNewSignup || !app.authManager.hasUsername()) {
-                        navigateTo(Screen.UsernameSetup, clearStack = true)
+                        navigateTo(Screen.UsernameSetup)
                     } else {
-                        navigateTo(Screen.Pairing, clearStack = true)
+                        navigateTo(Screen.Pairing)
                     }
                 }
             )
@@ -157,7 +187,7 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         Screen.UsernameSetup -> {
             UsernameSetupScreen(
                 onUsernameCreated = {
-                    navigateTo(Screen.Pairing, clearStack = true)
+                    navigateTo(Screen.Pairing)
                 }
             )
         }
@@ -171,12 +201,12 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                             if (app.pairingRepository.isPaired()) {
                                 navigateTo(Screen.Home, clearStack = true)
                             } else {
-                                navigateTo(Screen.Pairing, clearStack = true)
+                                navigateTo(Screen.Pairing)
                             }
                         }
                     }
                 },
-                onBackClick = if (backStack.size > 1) { { navigateBack() } } else null
+                onBackClick = { navigateBack() }
             )
         }
         Screen.Onboarding -> {
@@ -189,7 +219,7 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
                 onPairingSuccess = {
                     navigateTo(Screen.Home, clearStack = true)
                 },
-                onBackClick = if (backStack.size > 1) { { navigateBack() } } else null
+                onBackClick = { navigateBack() }
             )
         }
         Screen.Home -> {
