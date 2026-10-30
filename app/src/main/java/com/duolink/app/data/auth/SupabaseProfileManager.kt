@@ -523,7 +523,8 @@ class SupabaseProfileManager(
                 )
             )
 
-            // Remove from incoming requests
+            // Remove from incoming requests and clear any pending outgoing request
+            saveOutgoingRequest(null)
             _incomingRequests.value = _incomingRequests.value.filter { it.id != request.id }
             _pairingSuccessEvent.tryEmit(Unit)
         }

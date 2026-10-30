@@ -201,10 +201,9 @@ class CryptoManager(private val context: Context) {
      */
     fun encryptLocalString(plainText: String): String {
         val localKey = getOrCreateKeystoreAesKey(LOCAL_DB_KEY_ALIAS)
-        val iv = ByteArray(GCM_IV_LENGTH)
-        secureRandom.nextBytes(iv)
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, localKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+        cipher.init(Cipher.ENCRYPT_MODE, localKey)
+        val iv = cipher.iv
         val encrypted = cipher.doFinal(plainText.toByteArray(StandardCharsets.UTF_8))
         return Base64.encodeToString(iv + encrypted, Base64.NO_WRAP)
     }
