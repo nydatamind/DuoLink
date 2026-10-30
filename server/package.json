@@ -1,0 +1,16 @@
+{
+  "name": "duolink-signaling-server",
+  "version": "1.0.0",
+  "description": "Ultra-lightweight, zero-storage WebSocket signaling server for DuoLink private communication.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "keywords": ["webrtc", "signaling", "duolink", "private", "encryption"],
+  "author": "DuoLink Security Team",
+  "license": "MIT"
+}
+

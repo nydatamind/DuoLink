@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Connecting central link -->
+    <path
+        android:strokeColor="#FF384C"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M43,54 L65,54" />
+    <!-- Loop 1 (Left User) -->
+    <path
+        android:strokeColor="#FF384C"
+        android:strokeWidth="4"
+        android:pathData="M43,54m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+    <path
+        android:fillColor="#FF384C"
+        android:pathData="M43,54m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+    <!-- Loop 2 (Right User) -->
+    <path
+        android:strokeColor="#FF6B7A"
+        android:strokeWidth="4"
+        android:pathData="M65,54m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M65,54m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>
