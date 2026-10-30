@@ -9,7 +9,7 @@
 - **Official GitHub Repository**: [`https://github.com/nydatamind/DuoLink`](https://github.com/nydatamind/DuoLink)
 - **Official Releases**: [`https://github.com/nydatamind/DuoLink/releases`](https://github.com/nydatamind/DuoLink/releases)
 - **Production APK**: [`DuoLink.apk`](file:///d:/My_Projects/BlueTalk/DuoLink.apk) (71.07 MB, signed production release build with bundled Emoji2 font)
-- **Cryptographic SHA-256**: `8c28d66b7de1ca6af2f506d2992f5ae1ed182d603b11f6402373e578a55f6490`
+- **Cryptographic SHA-256**: `191921a03b7bbde0743282ca8c3940898a80c626c620254bf2d7f6da4891ffeb`
 - **Application Label**: `DuoLink`
 - **Application ID / Package**: `com.duolink.app`
 - **Telegram / iOS-Style Emoji Engine**: Bundled Google Noto Color Emoji (`androidx.emoji2:emoji2-bundled`) guaranteeing uniform emoji rendering across all Android versions without broken glyphs.

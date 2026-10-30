@@ -83,6 +83,30 @@ class SupabaseAuthManager(private val context: Context) {
     fun getInternalEmail(): String? = _currentSession.value?.email
 
     /**
+     * Checks whether Google OAuth provider is enabled in the Supabase project dashboard.
+     */
+    suspend fun isGoogleOAuthEnabled(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val req = Request.Builder()
+                .url("${SignalingClient.DEFAULT_SUPABASE_URL}/auth/v1/settings")
+                .header("apikey", SignalingClient.DEFAULT_SUPABASE_KEY)
+                .get()
+                .build()
+            val resp = httpClient.newCall(req).execute()
+            if (resp.isSuccessful) {
+                val body = resp.body?.string() ?: ""
+                val json = jsonSerializer.parseToJsonElement(body).jsonObject
+                val external = json["external"]?.jsonObject
+                val enabled = external?.get("google")?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
+                return@withContext enabled
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error checking Supabase auth settings: ${e.message}")
+        }
+        return@withContext false
+    }
+
+    /**
      * Initiates Google OAuth using Supabase Auth with custom tabs redirect.
      */
     fun startGoogleOAuth(context: Context) {
