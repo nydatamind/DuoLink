@@ -81,6 +81,8 @@ import com.duolink.app.ui.theme.DuoLinkRedPrimary
 import com.duolink.app.ui.theme.DuoLinkSurface
 import com.duolink.app.ui.theme.DuoLinkTextMuted
 import com.duolink.app.ui.theme.DuoLinkTextWhite
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Composable
@@ -99,6 +101,7 @@ fun PairingScreen(
     val myUsername = authManager.getUsername() ?: "user"
     val incomingRequests by profileManager.incomingRequests.collectAsState()
     val outgoingRequest by profileManager.outgoingRequest.collectAsState()
+    val discoveredPartners by profileManager.discoveredPartners.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
@@ -123,11 +126,23 @@ fun PairingScreen(
         if (granted) isScanningQr = true
     }
 
-    // Auto-navigate on mutual pairing confirmation
+    // Auto-navigate on mutual pairing confirmation & active discovery loop
     LaunchedEffect(Unit) {
-        profileManager.pairingSuccessEvent.collect {
-            Toast.makeText(context, "Pairing successful! Connected permanently.", Toast.LENGTH_SHORT).show()
-            onPairingSuccess()
+        val devId = app.cryptoManager.getDeviceId()
+        app.signalingClient.connect(SignalingClient.DEFAULT_SUPABASE_URL, devId)
+
+        launch {
+            profileManager.pairingSuccessEvent.collect {
+                Toast.makeText(context, "Pairing successful! Connected permanently.", Toast.LENGTH_SHORT).show()
+                onPairingSuccess()
+            }
+        }
+
+        // Active discovery broadcast loop while on PairingScreen
+        while (isActive) {
+            profileManager.broadcastPresence()
+            profileManager.broadcastQuery("*")
+            delay(2000)
         }
     }
 
@@ -336,17 +351,27 @@ fun PairingScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // SEARCH RESULTS
-                        if (searchResults.isNotEmpty()) {
+                        // COMBINED REAL-TIME DISCOVERY & SEARCH RESULTS
+                        val combinedUsers = remember(searchQuery, searchResults, discoveredPartners) {
+                            val q = searchQuery.trim().lowercase()
+                            val all = (searchResults + discoveredPartners).distinctBy { it.username }
+                            if (q.isBlank()) {
+                                discoveredPartners
+                            } else {
+                                all.filter { it.username.contains(q) }
+                            }
+                        }
+
+                        if (combinedUsers.isNotEmpty()) {
                             Text(
-                                text = "Results",
+                                text = if (searchQuery.isNotBlank()) "Search Results" else "Active Partners Online",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = DuoLinkTextMuted
+                                color = DuoLinkRedPrimary
                             )
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            searchResults.forEach { user ->
+                            combinedUsers.forEach { user ->
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -394,8 +419,14 @@ fun PairingScreen(
                             }
                         } else if (searchQuery.trim().length >= 2 && !isSearching) {
                             Text(
-                                text = "No user found for '@$searchQuery'.",
+                                text = "No partner found for '@$searchQuery'.",
                                 fontSize = 12.sp,
+                                color = DuoLinkTextMuted
+                            )
+                        } else if (!isSearching) {
+                            Text(
+                                text = "Open DuoLink on your partner's phone to connect automatically.",
+                                fontSize = 11.sp,
                                 color = DuoLinkTextMuted
                             )
                         }

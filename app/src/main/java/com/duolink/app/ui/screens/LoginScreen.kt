@@ -1,6 +1,10 @@
 package com.duolink.app.ui.screens
 
+import android.accounts.AccountManager
+import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -62,7 +62,9 @@ import com.duolink.app.ui.theme.DuoLinkRedPrimary
 import com.duolink.app.ui.theme.DuoLinkSurface
 import com.duolink.app.ui.theme.DuoLinkTextMuted
 import com.duolink.app.ui.theme.DuoLinkTextWhite
-import kotlinx.coroutines.launch
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun LoginScreen(
@@ -78,8 +80,73 @@ fun LoginScreen(
 
     var googleEmail by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
-    var isCheckingOAuth by remember { mutableStateOf(false) }
-    var showOAuthNotConfiguredDialog by remember { mutableStateOf(false) }
+    var showManualEmailInput by remember { mutableStateOf(false) }
+    var isSigningInGoogle by remember { mutableStateOf(false) }
+
+    // System Account Chooser as a reliable native fallback
+    val accountChooserLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        isSigningInGoogle = false
+        val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+        if (!accountName.isNullOrBlank()) {
+            authManager.signInWithGoogle(email = accountName)
+            val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
+            Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back", Toast.LENGTH_SHORT).show()
+            onLoginSuccess(isNew)
+        }
+    }
+
+    fun launchSystemAccountChooser() {
+        try {
+            val intent = AccountManager.newChooseAccountIntent(
+                null, null, arrayOf("com.google"), null, null, null, null
+            )
+            accountChooserLauncher.launch(intent)
+        } catch (err: Exception) {
+            isSigningInGoogle = false
+            Toast.makeText(context, "Select your Google account or enter email below", Toast.LENGTH_SHORT).show()
+            showManualEmailInput = true
+        }
+    }
+
+    // Official Google Sign-In setup
+    val gso = remember {
+        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestId()
+            .build()
+    }
+    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        isSigningInGoogle = false
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val email = account?.email ?: ""
+            val googleId = account?.id ?: ""
+            if (email.isNotBlank()) {
+                authManager.signInWithGoogle(email = email, googleId = googleId)
+                val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
+                Toast.makeText(context, if (isNew) "Google Account connected" else "Welcome back", Toast.LENGTH_SHORT).show()
+                onLoginSuccess(isNew)
+            } else {
+                launchSystemAccountChooser()
+            }
+        } catch (e: ApiException) {
+            Log.e("LoginScreen", "Google Sign-In notice (${e.statusCode})")
+            if (e.statusCode == 12501 || e.statusCode == 4) {
+                // User dismissed picker dialog
+                isSigningInGoogle = false
+            } else {
+                // Launch native Android account chooser
+                launchSystemAccountChooser()
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -177,17 +244,17 @@ fun LoginScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // AUTHENTICATION FORM CARD
+        // PRIMARY GOOGLE SIGN IN CARD
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = DuoLinkSurface),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(18.dp)) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 Text(
-                    text = if (selectedAuthMode == 0) "Sign In" else "Sign Up",
+                    text = if (selectedAuthMode == 0) "Continue with your Google account" else "Sign up with your Google account",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = DuoLinkTextWhite
@@ -196,120 +263,147 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = if (selectedAuthMode == 0)
-                        "Enter your Google email to sign in."
-                    else
-                        "Enter your Google email to register.",
+                    text = "Select your Google account. Your email and real name are private and never visible to your partner.",
                     fontSize = 12.sp,
                     color = DuoLinkTextMuted,
                     lineHeight = 17.sp
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                OutlinedTextField(
-                    value = googleEmail,
-                    onValueChange = {
-                        googleEmail = it
-                        emailError = null
-                    },
-                    label = { Text("Google Email") },
-                    placeholder = { Text("name@gmail.com") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Email, contentDescription = null, tint = DuoLinkRedPrimary)
-                    },
-                    isError = emailError != null,
-                    supportingText = emailError?.let { { Text(it, color = DuoLinkRedPrimary) } },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = DuoLinkTextWhite,
-                        unfocusedTextColor = DuoLinkTextWhite,
-                        focusedBorderColor = DuoLinkRedPrimary,
-                        unfocusedBorderColor = DuoLinkTextMuted.copy(alpha = 0.4f),
-                        focusedLabelColor = DuoLinkRedPrimary,
-                        unfocusedLabelColor = DuoLinkTextMuted
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
+                // OFFICIAL GOOGLE SIGN-IN BUTTON
                 Button(
                     onClick = {
-                        val trimmed = googleEmail.trim().lowercase()
-                        if (trimmed.isBlank() || !trimmed.contains("@") || !trimmed.contains(".")) {
-                            emailError = "Please enter a valid Google email address"
-                            return@Button
+                        isSigningInGoogle = true
+                        try {
+                            googleSignInClient.signOut().addOnCompleteListener {
+                                try {
+                                    googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                                } catch (e: Exception) {
+                                    launchSystemAccountChooser()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            launchSystemAccountChooser()
                         }
-
-                        authManager.signInWithGoogleAccount(trimmed)
-                        val isNew = selectedAuthMode == 1
-                        Toast.makeText(
-                            context,
-                            if (isNew) "Account connected. Choose your username." else "Welcome back",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        onLoginSuccess(isNew)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(52.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White)
                 ) {
-                    Text(
-                        text = if (selectedAuthMode == 0) "Sign In" else "Sign Up",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
+                    if (isSigningInGoogle) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = DuoLinkRedPrimary, strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text("Connecting Google...", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    } else {
+                        // Styled Google 'G' icon
+                        Text(
+                            text = "G",
+                            color = DuoLinkRedPrimary,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 20.sp
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = if (selectedAuthMode == 0) "Sign in with Google" else "Sign up with Google",
+                            color = Color(0xFF1F2937),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                    }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // BROWSER OAUTH OPTION
-        OutlinedButton(
-            onClick = {
-                if (isCheckingOAuth) return@OutlinedButton
-                isCheckingOAuth = true
-                scope.launch {
-                    val isEnabled = authManager.isGoogleOAuthEnabled()
-                    isCheckingOAuth = false
-                    if (isEnabled) {
-                        authManager.startGoogleOAuth(context)
-                    } else {
-                        showOAuthNotConfiguredDialog = true
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = DuoLinkTextWhite)
-        ) {
-            if (isCheckingOAuth) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    color = DuoLinkRedPrimary,
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Checking...", fontSize = 13.sp)
-            } else {
-                Icon(
-                    imageVector = Icons.Default.OpenInBrowser,
-                    contentDescription = null,
-                    tint = DuoLinkRedPrimary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+        // OPTIONAL / FALLBACK EMAIL INPUT (FOR EMULATORS OR DEVICES WITHOUT PLAY SERVICES)
+        if (!showManualEmailInput) {
+            TextButton(
+                onClick = { showManualEmailInput = true }
+            ) {
                 Text(
-                    text = if (selectedAuthMode == 0) "Browser Sign In" else "Browser Sign Up",
+                    text = "Or sign in with email address",
+                    color = DuoLinkTextMuted,
                     fontSize = 13.sp
                 )
+            }
+        } else {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = DuoLinkSurface),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Text(
+                        text = "Sign In with Email",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = DuoLinkTextWhite
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedTextField(
+                        value = googleEmail,
+                        onValueChange = {
+                            googleEmail = it
+                            emailError = null
+                        },
+                        label = { Text("Email Address") },
+                        placeholder = { Text("name@gmail.com") },
+                        leadingIcon = {
+                            Icon(Icons.Default.Email, contentDescription = null, tint = DuoLinkRedPrimary)
+                        },
+                        isError = emailError != null,
+                        supportingText = emailError?.let { { Text(it, color = DuoLinkRedPrimary) } },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = DuoLinkTextWhite,
+                            unfocusedTextColor = DuoLinkTextWhite,
+                            focusedBorderColor = DuoLinkRedPrimary,
+                            unfocusedBorderColor = DuoLinkTextMuted.copy(alpha = 0.4f),
+                            focusedLabelColor = DuoLinkRedPrimary,
+                            unfocusedLabelColor = DuoLinkTextMuted
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            val trimmed = googleEmail.trim().lowercase()
+                            if (trimmed.isBlank() || !trimmed.contains("@") || !trimmed.contains(".")) {
+                                emailError = "Please enter a valid email address"
+                                return@Button
+                            }
+
+                            authManager.signInWithGoogle(email = trimmed)
+                            val isNew = selectedAuthMode == 1 || !authManager.hasUsername()
+                            Toast.makeText(
+                                context,
+                                if (isNew) "Account connected. Set username next." else "Welcome back",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            onLoginSuccess(isNew)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
+                    ) {
+                        Text(
+                            text = "Continue",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
         }
 
@@ -334,38 +428,5 @@ fun LoginScreen(
         }
 
         Spacer(modifier = Modifier.height(28.dp))
-    }
-
-    // DIALOG: SUPABASE GOOGLE OAUTH NOT ENABLED
-    if (showOAuthNotConfiguredDialog) {
-        AlertDialog(
-            onDismissRequest = { showOAuthNotConfiguredDialog = false },
-            containerColor = DuoLinkSurface,
-            shape = RoundedCornerShape(18.dp),
-            title = {
-                Text(
-                    text = "Browser Login Unavailable",
-                    fontWeight = FontWeight.Bold,
-                    color = DuoLinkTextWhite,
-                    fontSize = 16.sp
-                )
-            },
-            text = {
-                Text(
-                    text = "Google browser sign-in is not configured on the server. Please enter your email directly above to continue.",
-                    fontSize = 13.sp,
-                    color = DuoLinkTextMuted,
-                    lineHeight = 18.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { showOAuthNotConfiguredDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
-                ) {
-                    Text("OK", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            }
-        )
     }
 }

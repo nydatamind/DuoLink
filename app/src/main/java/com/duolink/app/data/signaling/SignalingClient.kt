@@ -119,7 +119,17 @@ class SignalingClient(
                     val joinMsg = buildJsonObject {
                         put("topic", supabaseTopic)
                         put("event", "phx_join")
-                        put("payload", buildJsonObject {})
+                        put("payload", buildJsonObject {
+                            put("config", buildJsonObject {
+                                put("broadcast", buildJsonObject {
+                                    put("self", false)
+                                    put("ack", false)
+                                })
+                                put("presence", buildJsonObject {
+                                    put("key", currentDeviceId ?: "")
+                                })
+                            })
+                        })
                         put("ref", refCounter.getAndIncrement().toString())
                     }
                     webSocket.send(joinMsg.toString())
@@ -175,8 +185,8 @@ class SignalingClient(
 
             if (event == "broadcast") {
                 val payloadObj = json["payload"]?.jsonObject
-                val innerPayload = payloadObj?.get("payload")?.jsonObject
-                if (innerPayload != null) {
+                val innerPayload = payloadObj?.get("payload")?.jsonObject ?: payloadObj
+                if (innerPayload != null && innerPayload.containsKey("type")) {
                     val msg = jsonSerializer.decodeFromJsonElement(SignalingMessage.serializer(), innerPayload)
                     // Ignore broadcasts sent by self
                     if (msg.deviceId != currentDeviceId) {

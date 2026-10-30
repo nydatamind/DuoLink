@@ -102,6 +102,9 @@ dependencies {
     implementation("androidx.emoji2:emoji2:1.5.0")
     implementation("androidx.emoji2:emoji2-bundled:1.5.0")
 
+    // Google Sign-In (Official Android Play Services)
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

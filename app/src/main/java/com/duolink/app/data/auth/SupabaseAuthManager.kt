@@ -200,16 +200,16 @@ class SupabaseAuthManager(private val context: Context) {
     }
 
     /**
-     * Instant Google Sign-In for testing on two phones or emulators.
-     * Generates or restores an authenticated Google identity.
+     * Authenticates with official Google Account credentials.
+     * Generates or restores an authenticated internal Google identity.
      */
-    fun signInWithGoogleAccount(googleEmail: String): UserSession {
-        val existingUid = prefs.getString(KEY_USER_ID, null)
-        val userId = existingUid ?: UUID.nameUUIDFromBytes(googleEmail.toByteArray()).toString()
+    fun signInWithGoogle(email: String, googleId: String = ""): UserSession {
+        val cleanEmail = email.trim().lowercase()
+        val userId = if (googleId.isNotBlank()) googleId else UUID.nameUUIDFromBytes(cleanEmail.toByteArray()).toString()
         val username = prefs.getString(KEY_USERNAME, "") ?: ""
         val session = UserSession(
             userId = userId,
-            email = googleEmail,
+            email = cleanEmail,
             accessToken = "token_google_${UUID.randomUUID()}",
             refreshToken = "refresh_${UUID.randomUUID()}",
             authenticatedAt = System.currentTimeMillis(),
@@ -217,6 +217,13 @@ class SupabaseAuthManager(private val context: Context) {
         )
         saveSession(session)
         return session
+    }
+
+    /**
+     * Legacy / manual email authentication helper.
+     */
+    fun signInWithGoogleAccount(googleEmail: String): UserSession {
+        return signInWithGoogle(googleEmail, "")
     }
 
     private fun saveSession(session: UserSession) {

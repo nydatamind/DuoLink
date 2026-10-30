@@ -117,12 +117,17 @@ class DuoLinkApp : Application() {
 
         // Auto-connect to signaling (Supabase or self-hosted) and start foreground connection service
         appScope.launch {
+            val deviceId = cryptoManager.getDeviceId()
             val pairing = database.pairingDao().getPairingOnce()
-            if (pairing != null && pairing.isConfirmed) {
-                val urlToConnect = pairing.signalingServerUrl.ifEmpty { SignalingClient.DEFAULT_SUPABASE_URL }
-                Log.d("DuoLinkApp", "Connecting signaling: $urlToConnect")
-                signalingClient.connect(urlToConnect, cryptoManager.getDeviceId())
+            val urlToConnect = if (pairing != null && pairing.isConfirmed) {
+                pairing.signalingServerUrl.ifEmpty { SignalingClient.DEFAULT_SUPABASE_URL }
+            } else {
+                SignalingClient.DEFAULT_SUPABASE_URL
+            }
+            Log.d("DuoLinkApp", "Connecting signaling: $urlToConnect")
+            signalingClient.connect(urlToConnect, deviceId)
 
+            if (pairing != null && pairing.isConfirmed) {
                 try {
                     val serviceIntent = android.content.Intent(this@DuoLinkApp, DuoLinkConnectionService::class.java)
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

@@ -80,12 +80,44 @@ class SupabaseProfileManager(
     private val _pairingSuccessEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val pairingSuccessEvent: SharedFlow<Unit> = _pairingSuccessEvent.asSharedFlow()
 
+    private val _discoveredPartners = MutableStateFlow<List<PartnerSearchResult>>(emptyList())
+    val discoveredPartners: StateFlow<List<PartnerSearchResult>> = _discoveredPartners.asStateFlow()
+
     // Realtime discovery cache
     private val cachedDiscoveryUsers = mutableMapOf<String, PartnerSearchResult>()
 
     init {
         loadPendingOutgoingRequest()
         listenForSignalingEvents()
+    }
+
+    fun broadcastPresence() {
+        val myUsername = authManager.getUsername()?.lowercase() ?: return
+        val myDeviceId = cryptoManager.getDeviceId()
+        val myPubKey = cryptoManager.getLocalPublicKeyBase64()
+        val myUserId = authManager.getInternalUserId() ?: myDeviceId
+        signalingClient.send(
+            SignalingMessage(
+                type = "USER_PRESENCE",
+                deviceId = myDeviceId,
+                googleUserId = myUserId,
+                username = myUsername,
+                publicKeyBase64 = myPubKey
+            )
+        )
+    }
+
+    fun broadcastQuery(query: String = "*") {
+        val myUsername = authManager.getUsername()?.lowercase() ?: ""
+        val myDeviceId = cryptoManager.getDeviceId()
+        signalingClient.send(
+            SignalingMessage(
+                type = "QUERY_USER",
+                query = query,
+                username = myUsername,
+                deviceId = myDeviceId
+            )
+        )
     }
 
     private fun loadPendingOutgoingRequest() {
@@ -121,6 +153,13 @@ class SupabaseProfileManager(
                 if (msg.deviceId == myDeviceId) return@collect
 
                 when (msg.type) {
+                    "QUERY_USER" -> {
+                        val q = msg.query?.lowercase() ?: ""
+                        if (q.isBlank() || myUsername.contains(q) || q == "*") {
+                            broadcastPresence()
+                        }
+                    }
+
                     "USER_PRESENCE" -> {
                         val uName = msg.username?.lowercase()
                         val pKey = msg.publicKeyBase64
@@ -132,6 +171,7 @@ class SupabaseProfileManager(
                                 deviceId = devId,
                                 publicKeyBase64 = pKey
                             )
+                            _discoveredPartners.value = cachedDiscoveryUsers.values.filter { it.username != myUsername && it.deviceId != myDeviceId }
                         }
                     }
 
@@ -304,6 +344,14 @@ class SupabaseProfileManager(
         val myDeviceId = cryptoManager.getDeviceId()
         val results = mutableListOf<PartnerSearchResult>()
 
+        // 1. Broadcast real-time query over WebSocket channel so active peers reply immediately
+        broadcastQuery(clean)
+        broadcastPresence()
+
+        // Allow rapid WebSocket echo to arrive
+        kotlinx.coroutines.delay(200)
+
+        // 2. Query Supabase REST if table exists
         try {
             val url = "${SignalingClient.DEFAULT_SUPABASE_URL}/rest/v1/duolink_profiles?username=ilike.$clean%25&select=user_id,username,device_id,public_key&limit=8"
             val request = Request.Builder()
@@ -330,10 +378,10 @@ class SupabaseProfileManager(
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Search query exception: ${e.message}")
+            Log.w(TAG, "Search query REST exception: ${e.message}")
         }
 
-        // Also search in Realtime cache for any discovered peers
+        // 3. Search in Realtime cache for any discovered peers
         cachedDiscoveryUsers.values.forEach { cached ->
             if (cached.username.contains(clean) && cached.username != myUsername && cached.deviceId != myDeviceId) {
                 if (results.none { it.username == cached.username }) {

@@ -3,6 +3,7 @@ package com.duolink.app
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,8 +88,8 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
     val app = DuoLinkApp.instance
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Splash) }
-    var previousScreen by remember { mutableStateOf<Screen?>(null) }
+    val backStack = remember { mutableStateListOf<Screen>(Screen.Splash) }
+    val currentScreen = backStack.lastOrNull() ?: Screen.Splash
 
     var startupUpdate by remember { mutableStateOf<UpdateInfo?>(null) }
     val updateChecker = remember { UpdateChecker(context) }
@@ -102,28 +104,41 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         }
     }
 
-    fun navigateTo(screen: Screen) {
-        previousScreen = currentScreen
-        currentScreen = screen
+    fun navigateTo(screen: Screen, clearStack: Boolean = false) {
+        if (clearStack) {
+            backStack.clear()
+            backStack.add(screen)
+        } else {
+            if (backStack.lastOrNull() != screen) {
+                backStack.add(screen)
+            }
+        }
     }
 
     fun navigateBack() {
-        currentScreen = previousScreen ?: Screen.Home
+        if (backStack.size > 1) {
+            backStack.removeAt(backStack.size - 1)
+        }
+    }
+
+    // Official Android Back Gesture / Button Handler
+    BackHandler(enabled = backStack.size > 1) {
+        navigateBack()
     }
 
     when (currentScreen) {
         Screen.Splash -> {
             SplashScreen(
-                onNavigateToHome = { navigateTo(Screen.Home) },
+                onNavigateToHome = {
+                    navigateTo(Screen.Home, clearStack = true)
+                },
                 onNavigateToOnboarding = {
-                    if (app.authManager.isAuthenticated()) {
-                        if (!app.authManager.hasUsername()) {
-                            navigateTo(Screen.UsernameSetup)
-                        } else {
-                            navigateTo(Screen.Permissions)
-                        }
+                    if (!app.authManager.isAuthenticated()) {
+                        navigateTo(Screen.Login, clearStack = true)
+                    } else if (!app.authManager.hasUsername()) {
+                        navigateTo(Screen.UsernameSetup, clearStack = true)
                     } else {
-                        navigateTo(Screen.Login)
+                        navigateTo(Screen.Pairing, clearStack = true)
                     }
                 }
             )
@@ -132,9 +147,9 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
             LoginScreen(
                 onLoginSuccess = { isNewSignup ->
                     if (isNewSignup || !app.authManager.hasUsername()) {
-                        navigateTo(Screen.UsernameSetup)
+                        navigateTo(Screen.UsernameSetup, clearStack = true)
                     } else {
-                        navigateTo(Screen.Permissions)
+                        navigateTo(Screen.Pairing, clearStack = true)
                     }
                 }
             )
@@ -142,22 +157,26 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         Screen.UsernameSetup -> {
             UsernameSetupScreen(
                 onUsernameCreated = {
-                    navigateTo(Screen.Permissions)
+                    navigateTo(Screen.Pairing, clearStack = true)
                 }
             )
         }
         Screen.Permissions -> {
             PermissionsSetupScreen(
                 onContinue = {
-                    scope.launch {
-                        if (app.pairingRepository.isPaired()) {
-                            navigateTo(Screen.Home)
-                        } else {
-                            navigateTo(Screen.Pairing)
+                    if (backStack.size > 1) {
+                        navigateBack()
+                    } else {
+                        scope.launch {
+                            if (app.pairingRepository.isPaired()) {
+                                navigateTo(Screen.Home, clearStack = true)
+                            } else {
+                                navigateTo(Screen.Pairing, clearStack = true)
+                            }
                         }
                     }
                 },
-                onBackClick = if (previousScreen != null && previousScreen != Screen.Login && previousScreen != Screen.Splash) { { navigateBack() } } else null
+                onBackClick = if (backStack.size > 1) { { navigateBack() } } else null
             )
         }
         Screen.Onboarding -> {
@@ -167,8 +186,10 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         }
         Screen.Pairing -> {
             PairingScreen(
-                onPairingSuccess = { navigateTo(Screen.Home) },
-                onBackClick = if (previousScreen != null) { { navigateBack() } } else null
+                onPairingSuccess = {
+                    navigateTo(Screen.Home, clearStack = true)
+                },
+                onBackClick = if (backStack.size > 1) { { navigateBack() } } else null
             )
         }
         Screen.Home -> {
@@ -182,37 +203,39 @@ fun DuoLinkAppNavigation(deepLinkSignal: Boolean) {
         }
         Screen.Chat -> {
             ChatScreen(
-                onBackClick = { navigateTo(Screen.Home) },
+                onBackClick = { navigateBack() },
                 onNavigateToCall = { navigateTo(Screen.Call) }
             )
         }
         Screen.Call -> {
             CallScreen(
-                onCallEnded = { navigateTo(Screen.Home) }
+                onCallEnded = { navigateBack() }
             )
         }
         Screen.CallHistory -> {
             CallHistoryScreen(
-                onBackClick = { navigateTo(Screen.Home) }
+                onBackClick = { navigateBack() }
             )
         }
         Screen.Settings -> {
             SettingsScreen(
-                onBackClick = { navigateTo(Screen.Home) },
+                onBackClick = { navigateBack() },
                 onNavigateToDiagnostics = { navigateTo(Screen.Diagnostics) },
                 onNavigateToAbout = { navigateTo(Screen.About) },
                 onNavigateToPermissions = { navigateTo(Screen.Permissions) },
-                onUnpaired = { navigateTo(Screen.Onboarding) }
+                onUnpaired = {
+                    navigateTo(Screen.Login, clearStack = true)
+                }
             )
         }
         Screen.Diagnostics -> {
             DiagnosticsScreen(
-                onBackClick = { navigateTo(Screen.Settings) }
+                onBackClick = { navigateBack() }
             )
         }
         Screen.About -> {
             AboutScreen(
-                onBackClick = { navigateTo(Screen.Settings) }
+                onBackClick = { navigateBack() }
             )
         }
         else -> {

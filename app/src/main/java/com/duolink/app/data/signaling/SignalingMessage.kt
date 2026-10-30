@@ -35,6 +35,7 @@ data class SignalingMessage(
     val isOnline: Boolean? = null,
     val lastSeen: Long? = null,
     val isTyping: Boolean? = null,
+    val query: String? = null,
     val messageId: String? = null,
     val clearedBeforeTimestamp: Long? = null,
     val envelope: EncryptedEnvelope? = null,
