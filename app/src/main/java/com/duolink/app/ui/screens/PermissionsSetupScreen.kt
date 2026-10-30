@@ -161,7 +161,7 @@ fun PermissionsSetupScreen(
                 SimplePermissionRow(
                     icon = Icons.Default.Mic,
                     title = "Microphone",
-                    subtitle = "Voice notes & encrypted calls",
+                    subtitle = "Voice notes and calls",
                     isAllowed = hasMic,
                     onClick = {
                         if (!hasMic) micLauncher.launch(Manifest.permission.RECORD_AUDIO)
@@ -174,7 +174,7 @@ fun PermissionsSetupScreen(
                 SimplePermissionRow(
                     icon = Icons.Default.CameraAlt,
                     title = "Camera",
-                    subtitle = "Video calls & QR pairing",
+                    subtitle = "Video calls and QR code",
                     isAllowed = hasCamera,
                     onClick = {
                         if (!hasCamera) cameraLauncher.launch(Manifest.permission.CAMERA)
@@ -187,7 +187,7 @@ fun PermissionsSetupScreen(
                 SimplePermissionRow(
                     icon = Icons.Default.Notifications,
                     title = "Notifications",
-                    subtitle = "Background call & message alerts",
+                    subtitle = "Call and message alerts",
                     isAllowed = hasNotifications,
                     onClick = {
                         if (!hasNotifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -202,7 +202,7 @@ fun PermissionsSetupScreen(
                 SimplePermissionRow(
                     icon = Icons.Default.Vibration,
                     title = "Vibration",
-                    subtitle = "Silent hardware alert motor",
+                    subtitle = "Silent alerts",
                     isAllowed = true,
                     isFixed = true,
                     onClick = {}
@@ -250,7 +250,7 @@ fun PermissionsSetupScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "System App Settings",
+                        text = "App Settings",
                         color = DuoLinkTextMuted,
                         fontSize = 12.sp
                     )
@@ -323,7 +323,7 @@ private fun SimplePermissionRow(
                     .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
                 Text(
-                    text = if (isAllowed) "Allowed" else "Not Allowed",
+                    text = if (isAllowed) "Allowed" else "Enable",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isAllowed) Color(0xFF4CAF50) else DuoLinkRedPrimary

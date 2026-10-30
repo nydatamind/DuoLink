@@ -120,7 +120,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = if (selectedAuthMode == 0) "Sign in with your Google account" else "Sign up with your Google account",
+            text = if (selectedAuthMode == 0) "Sign in to continue" else "Create an account",
             style = MaterialTheme.typography.bodyMedium.copy(color = DuoLinkTextMuted)
         )
 
@@ -187,7 +187,7 @@ fun LoginScreen(
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
                 Text(
-                    text = if (selectedAuthMode == 0) "Existing Account Sign In" else "New Account Sign Up",
+                    text = if (selectedAuthMode == 0) "Sign In" else "Sign Up",
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = DuoLinkTextWhite
@@ -197,9 +197,9 @@ fun LoginScreen(
 
                 Text(
                     text = if (selectedAuthMode == 0)
-                        "Enter the Google email you used when creating your DuoLink identity."
+                        "Enter your Google email to sign in."
                     else
-                        "Enter your Google email to register. You will choose a unique username on the next step.",
+                        "Enter your Google email to register.",
                     fontSize = 12.sp,
                     color = DuoLinkTextMuted,
                     lineHeight = 17.sp
@@ -213,8 +213,8 @@ fun LoginScreen(
                         googleEmail = it
                         emailError = null
                     },
-                    label = { Text("Google Account Email") },
-                    placeholder = { Text("e.g. yourname@gmail.com") },
+                    label = { Text("Google Email") },
+                    placeholder = { Text("name@gmail.com") },
                     leadingIcon = {
                         Icon(Icons.Default.Email, contentDescription = null, tint = DuoLinkRedPrimary)
                     },
@@ -246,7 +246,7 @@ fun LoginScreen(
                         val isNew = selectedAuthMode == 1
                         Toast.makeText(
                             context,
-                            if (isNew) "Google Account connected. Set your username next." else "Welcome back!",
+                            if (isNew) "Account connected. Choose your username." else "Welcome back",
                             Toast.LENGTH_SHORT
                         ).show()
                         onLoginSuccess(isNew)
@@ -258,7 +258,7 @@ fun LoginScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
                 ) {
                     Text(
-                        text = if (selectedAuthMode == 0) "Sign In with Google" else "Sign Up with Google",
+                        text = if (selectedAuthMode == 0) "Sign In" else "Sign Up",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
@@ -297,7 +297,7 @@ fun LoginScreen(
                     strokeWidth = 2.dp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Checking Supabase Provider...", fontSize = 13.sp)
+                Text("Checking...", fontSize = 13.sp)
             } else {
                 Icon(
                     imageVector = Icons.Default.OpenInBrowser,
@@ -307,7 +307,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (selectedAuthMode == 0) "Sign In via Web Browser OAuth" else "Sign Up via Web Browser OAuth",
+                    text = if (selectedAuthMode == 0) "Browser Sign In" else "Browser Sign Up",
                     fontSize = 13.sp
                 )
             }
@@ -315,31 +315,22 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // IDENTITY PRIVACY GUARANTEE CARD
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = DuoLinkSurface),
-            modifier = Modifier.fillMaxWidth()
+        // PRIVACY NOTE
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(DuoLinkSurface)
+                .padding(14.dp)
         ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Shield, contentDescription = null, tint = DuoLinkRedPrimary, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Complete Identity Privacy Guarantee",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = DuoLinkTextWhite
-                    )
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "• Your Gmail address is NEVER shared with your partner.\n• Your Google profile name and photo are NEVER displayed.\n• Each partner sees only your chosen unique username.\n• Custom nicknames are stored strictly on the local phone.",
-                    fontSize = 11.sp,
-                    color = DuoLinkTextMuted,
-                    lineHeight = 16.sp
-                )
-            }
+            Text(
+                text = "Your email and personal details are private and never shared with your partner.",
+                fontSize = 12.sp,
+                color = DuoLinkTextMuted,
+                lineHeight = 17.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
@@ -352,46 +343,27 @@ fun LoginScreen(
             containerColor = DuoLinkSurface,
             shape = RoundedCornerShape(18.dp),
             title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = DuoLinkRedPrimary)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Google Provider Not Enabled",
-                        fontWeight = FontWeight.Bold,
-                        color = DuoLinkTextWhite,
-                        fontSize = 16.sp
-                    )
-                }
+                Text(
+                    text = "Browser Login Unavailable",
+                    fontWeight = FontWeight.Bold,
+                    color = DuoLinkTextWhite,
+                    fontSize = 16.sp
+                )
             },
             text = {
-                Column {
-                    Text(
-                        text = "In your Supabase project (kypyymlubmylmomoqyoq), the Google OAuth provider has not yet been toggled ON in the dashboard.",
-                        fontSize = 13.sp,
-                        color = DuoLinkTextMuted,
-                        lineHeight = 18.sp
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "👉 Fast & Secure Solution:\nEnter your Google / Gmail account in the text box on this screen to authenticate immediately without waiting for Supabase OAuth setup.",
-                        fontSize = 12.sp,
-                        color = DuoLinkTextWhite,
-                        lineHeight = 17.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                Text(
+                    text = "Google browser sign-in is not configured on the server. Please enter your email directly above to continue.",
+                    fontSize = 13.sp,
+                    color = DuoLinkTextMuted,
+                    lineHeight = 18.sp
+                )
             },
             confirmButton = {
                 Button(
                     onClick = { showOAuthNotConfiguredDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
                 ) {
-                    Text("Enter Email on Screen", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showOAuthNotConfiguredDialog = false }) {
-                    Text("Close", color = DuoLinkTextMuted)
+                    Text("OK", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         )

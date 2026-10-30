@@ -125,7 +125,7 @@ fun HomeScreen(
                         )
                     )
                     Text(
-                        text = "Sovereign 2-Person Link",
+                        text = "Private Link",
                         fontSize = 11.sp,
                         color = DuoLinkTextMuted
                     )
@@ -174,7 +174,7 @@ fun HomeScreen(
 
                 if (pairingState == null) {
                     Text(
-                        text = "No Partner Linked",
+                        text = "No Partner Connected",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = DuoLinkTextWhite
@@ -193,9 +193,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
                     ) {
-                        Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Color.White)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Connect Partner", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Connect", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 } else {
                     Text(
@@ -210,9 +208,9 @@ fun HomeScreen(
 
                     Text(
                         text = when (owlEyeState) {
-                            OwlEyeState.OPEN -> "● Active Now (Alert)"
-                            OwlEyeState.HALF -> "◐ Sleepy (Inactive recently)"
-                            OwlEyeState.CLOSED -> "○ Resting / Inactive"
+                            OwlEyeState.OPEN -> "Active Now"
+                            OwlEyeState.HALF -> "Inactive Recently"
+                            OwlEyeState.CLOSED -> "Offline"
                         },
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -265,7 +263,7 @@ fun HomeScreen(
 
                     HomeActionButton(
                         icon = Icons.Default.Call,
-                        label = "Voice Call",
+                        label = "Voice",
                         containerColor = DuoLinkCharcoalBg,
                         contentColor = DuoLinkRedPrimary,
                         onClick = {
@@ -278,7 +276,7 @@ fun HomeScreen(
 
                     HomeActionButton(
                         icon = Icons.Default.Videocam,
-                        label = "Video Call",
+                        label = "Video",
                         containerColor = DuoLinkCharcoalBg,
                         contentColor = Color.White,
                         onClick = {
@@ -331,7 +329,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Recent Message",
+                            text = "Messages",
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
                             color = DuoLinkTextWhite

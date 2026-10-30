@@ -88,13 +88,13 @@ fun UpdateDialog(
                 OwlMascotView(state = OwlEyeState.OPEN, size = 42.dp)
                 Column {
                     Text(
-                        text = "New DuoLink Update",
+                        text = "Update Available",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = DuoLinkTextWhite
                     )
                     Text(
-                        text = "Current: v${BuildConfig.VERSION_NAME} ➔ New: ${updateInfo.versionName}",
+                        text = "v${BuildConfig.VERSION_NAME} to ${updateInfo.versionName}",
                         fontSize = 12.sp,
                         color = DuoLinkRedPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -119,7 +119,7 @@ fun UpdateDialog(
                 }
 
                 Text(
-                    text = "What's New in ${updateInfo.versionName}:",
+                    text = "Changes in ${updateInfo.versionName}:",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = DuoLinkTextWhite
@@ -210,7 +210,7 @@ fun UpdateDialog(
                 ) {
                     Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Install Update")
+                    Text("Install")
                 }
             } else {
                 Button(
@@ -238,7 +238,7 @@ fun UpdateDialog(
                 ) {
                     Icon(Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (isDownloading) "Downloading..." else "Download Update")
+                    Text(if (isDownloading) "Downloading..." else "Download")
                 }
             }
         },

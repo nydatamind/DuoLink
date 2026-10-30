@@ -129,7 +129,7 @@ fun SettingsScreen(
                         Icon(Icons.Default.Security, contentDescription = null, tint = DuoLinkRedPrimary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Identity Privacy & Google Auth",
+                            text = "Account & Privacy",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                         )
                     }
@@ -138,7 +138,7 @@ fun SettingsScreen(
 
                     val internalUserId = app.authManager.getInternalUserId() ?: "Not signed in"
                     Text(
-                        text = "Internal Account ID: $internalUserId",
+                        text = "Account ID: $internalUserId",
                         fontSize = 12.sp,
                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                         color = DuoLinkTextMuted
@@ -154,7 +154,7 @@ fun SettingsScreen(
                             .padding(12.dp)
                     ) {
                         Text(
-                            text = "🔒 Zero-Leak Guarantee: Your Gmail address, Google name, and profile photo are strictly private to this device and NEVER transmitted to your partner or displayed in the app. Each phone maintains its own independent custom nickname.",
+                            text = "Your email address and Google profile are private to this device and never shared with your partner.",
                             fontSize = 12.sp,
                             color = DuoLinkTextWhite.copy(alpha = 0.9f),
                             lineHeight = 17.sp
@@ -164,7 +164,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
-                        text = "Partner's Private Nickname",
+                        text = "Partner Nickname",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = DuoLinkTextMuted
@@ -186,11 +186,11 @@ fun SettingsScreen(
                             newDisplayName = pairingState?.peerDisplayName ?: ""
                             showEditNameDialog = true
                         }) {
-                            Text("Change Nickname", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                            Text("Edit", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                         }
                     }
                     Text(
-                        text = "Changing this name only changes how your partner appears on this phone.",
+                        text = "This name is only visible on your device.",
                         fontSize = 11.sp,
                         color = DuoLinkTextMuted
                     )
@@ -208,11 +208,11 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Dynamic Owl Mascot & Icon",
+                                text = "Dynamic Owl Mascot",
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                             )
                             Text(
-                                text = "Current State: ${owlEyeState.title}",
+                                text = "Status: ${owlEyeState.title}",
                                 fontSize = 12.sp,
                                 color = DuoLinkRedPrimary,
                                 fontWeight = FontWeight.SemiBold
@@ -223,7 +223,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "The 3D Owl mascot and your Android home screen launcher icon dynamically reflect your partner's activity level:\n• 0–5m: Alert (Wide open eyes)\n• 5m–1h: Sleepy (Half-closed eyes)\n• >1h: Resting (Completely closed eyes)",
+                        text = "The owl mascot and app icon reflect your partner's recent activity.",
                         fontSize = 12.sp,
                         color = DuoLinkTextMuted,
                         lineHeight = 17.sp
@@ -232,7 +232,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
-                        text = "Test Launcher Icon & Mascot Expression:",
+                        text = "Preview Status:",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = DuoLinkTextWhite
@@ -247,34 +247,34 @@ fun SettingsScreen(
                         OutlinedButton(
                             onClick = {
                                 app.owlEyeStateManager.forceTestState(OwlEyeState.OPEN)
-                                Toast.makeText(context, "Mascot & Icon set to Alert (Open)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Set to Active", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Alert", fontSize = 11.sp, color = DuoLinkTextWhite)
+                            Text("Active", fontSize = 11.sp, color = DuoLinkTextWhite)
                         }
 
                         OutlinedButton(
                             onClick = {
                                 app.owlEyeStateManager.forceTestState(OwlEyeState.HALF)
-                                Toast.makeText(context, "Mascot & Icon set to Sleepy (Half)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Set to Inactive", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Sleepy", fontSize = 11.sp, color = DuoLinkTextWhite)
+                            Text("Inactive", fontSize = 11.sp, color = DuoLinkTextWhite)
                         }
 
                         OutlinedButton(
                             onClick = {
                                 app.owlEyeStateManager.forceTestState(OwlEyeState.CLOSED)
-                                Toast.makeText(context, "Mascot & Icon set to Sleeping (Closed)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Set to Offline", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Sleeping", fontSize = 11.sp, color = DuoLinkRedPrimary)
+                            Text("Offline", fontSize = 11.sp, color = DuoLinkRedPrimary)
                         }
                     }
                 }
@@ -290,7 +290,7 @@ fun SettingsScreen(
                         Icon(Icons.Default.Vibration, contentDescription = null, tint = DuoLinkRedPrimary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Silent Vibration Alert System",
+                            text = "Vibration Alerts",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                         )
                     }
@@ -298,7 +298,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "DuoLink is 100% silent and stealthy. Visible banners, ringtones, and notification previews are completely disabled. Alerts operate via hardware vibration.",
+                        text = "DuoLink uses silent hardware vibration for private notifications without visible banners or sounds.",
                         fontSize = 13.sp,
                         color = DuoLinkTextMuted,
                         lineHeight = 18.sp
@@ -313,7 +313,7 @@ fun SettingsScreen(
                         OutlinedButton(
                             onClick = {
                                 vibrationManager.testMessageVibration()
-                                Toast.makeText(context, "Testing Message Vibration Pattern", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Testing message pattern", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
@@ -324,7 +324,7 @@ fun SettingsScreen(
                         OutlinedButton(
                             onClick = {
                                 vibrationManager.startCallVibration()
-                                Toast.makeText(context, "Testing Call Vibration (Pulsing)", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Testing call pattern", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(12.dp)
@@ -346,27 +346,27 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.Stop, contentDescription = null, tint = Color.White)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Stop Vibration", color = Color.White)
+                        Text("Stop", color = Color.White)
                     }
                 }
             }
 
-            // SYNCHRONIZED DELETION & STORAGE CARD
+            // DATA & HISTORY CARD
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Synchronized History & Privacy",
+                        text = "Data & History",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
                     SettingsRowItem(
                         icon = Icons.Default.DeleteSweep,
-                        title = "Clear Chat History for Both",
-                        subtitle = "Wipes all messages and attachments on both devices",
+                        title = "Clear Chat History",
+                        subtitle = "Deletes all messages and media on both devices",
                         onClick = { showClearChatDialog = true }
                     )
 
@@ -374,8 +374,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.Call,
-                        title = "Clear Call History for Both",
-                        subtitle = "Wipes all call logs from both devices",
+                        title = "Clear Call History",
+                        subtitle = "Deletes all call logs on both devices",
                         onClick = { showClearCallsDialog = true }
                     )
 
@@ -383,8 +383,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.DeleteForever,
-                        title = "Clear ALL History for Both",
-                        subtitle = "Telegram-style: wipes chat, files, and calls for both users",
+                        title = "Clear All History",
+                        subtitle = "Deletes all chats, files, and call logs on both devices",
                         onClick = { showClearAllHistoryDialog = true }
                     )
 
@@ -392,8 +392,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.Download,
-                        title = "Export Encrypted Backup",
-                        subtitle = "Saves AES-encrypted local archive to internal storage",
+                        title = "Export Backup",
+                        subtitle = "Saves encrypted backup to storage",
                         onClick = {
                             scope.launch {
                                 withContext(Dispatchers.IO) {
@@ -401,7 +401,7 @@ fun SettingsScreen(
                                     val backupFile = File(backupDir, "duolink_backup_${System.currentTimeMillis()}.enc")
                                     backupFile.writeText("DUOLINK_ENCRYPTED_BACKUP_CONTAINER_V1")
                                 }
-                                Toast.makeText(context, "Encrypted backup created", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "Encrypted backup saved", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -415,7 +415,7 @@ fun SettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Diagnostics & Security",
+                        text = "Diagnostics",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = DuoLinkTextWhite)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -423,11 +423,11 @@ fun SettingsScreen(
                     SettingsRowItem(
                         icon = Icons.Default.SystemUpdate,
                         title = "Check for Updates",
-                        subtitle = if (isCheckingUpdate) "Checking GitHub Releases..." else "Installed: v${BuildConfig.VERSION_NAME} • GitHub Releases",
+                        subtitle = if (isCheckingUpdate) "Checking releases..." else "Version ${BuildConfig.VERSION_NAME}",
                         onClick = {
                             if (isCheckingUpdate) return@SettingsRowItem
                             isCheckingUpdate = true
-                            Toast.makeText(context, "Checking for DuoLink updates...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Checking for updates...", Toast.LENGTH_SHORT).show()
                             scope.launch {
                                 val result = withContext(Dispatchers.IO) {
                                     updateChecker.checkForUpdate(ignoreDismissed = true)
@@ -441,7 +441,7 @@ fun SettingsScreen(
                                     if (err != null) {
                                         Toast.makeText(context, "Could not check updates: ${err.message}", Toast.LENGTH_LONG).show()
                                     } else {
-                                        Toast.makeText(context, "DuoLink is up to date (v${BuildConfig.VERSION_NAME})", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, "DuoLink is up to date", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -452,8 +452,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.Security,
-                        title = "Permissions & Battery Optimization",
-                        subtitle = "Verify background execution, vibration, and call permissions",
+                        title = "Permissions",
+                        subtitle = "Battery and background permissions",
                         onClick = onNavigateToPermissions
                     )
 
@@ -461,8 +461,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.BugReport,
-                        title = "Connection Diagnostics",
-                        subtitle = "Supabase Realtime, WebSocket, and DataChannel status",
+                        title = "Diagnostics",
+                        subtitle = "Realtime and WebRTC connection status",
                         onClick = onNavigateToDiagnostics
                     )
 
@@ -470,8 +470,8 @@ fun SettingsScreen(
 
                     SettingsRowItem(
                         icon = Icons.Default.Info,
-                        title = "About DuoLink",
-                        subtitle = "Cryptographic specifications and architecture",
+                        title = "About",
+                        subtitle = "Version and app details",
                         onClick = onNavigateToAbout
                     )
                 }
@@ -488,7 +488,7 @@ fun SettingsScreen(
             ) {
                 Icon(Icons.Default.LinkOff, contentDescription = null, tint = DuoLinkRedPrimary)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Unpair Device", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                Text("Unpair", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -496,11 +496,11 @@ fun SettingsScreen(
     if (showUnpairDialog) {
         AlertDialog(
             onDismissRequest = { showUnpairDialog = false },
-            title = { Text("Unpair Devices?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
+            title = { Text("Unpair?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
             containerColor = DuoLinkSurface,
             text = {
                 Text(
-                    "This will revoke cryptographic session keys and wipe all local messages. You will need to re-scan the QR code to pair again.",
+                    "This will disconnect your paired link and clear local encryption keys.",
                     color = DuoLinkTextMuted
                 )
             },
@@ -528,20 +528,20 @@ fun SettingsScreen(
     if (showClearChatDialog) {
         AlertDialog(
             onDismissRequest = { showClearChatDialog = false },
-            title = { Text("Clear chat history for both users?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
+            title = { Text("Clear Chat History?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
             containerColor = DuoLinkSurface,
-            text = { Text("This will permanently delete all messages and media attachments from BOTH your phone and your partner's phone. This cannot be undone.", color = DuoLinkTextMuted) },
+            text = { Text("This will permanently delete all messages and media on both devices.", color = DuoLinkTextMuted) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showClearChatDialog = false
                         scope.launch {
                             app.chatRepository.clearChatHistoryForBoth()
-                            Toast.makeText(context, "Chat history cleared for both devices", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Chat history cleared", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
-                    Text("Clear for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                    Text("Clear", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -555,20 +555,20 @@ fun SettingsScreen(
     if (showClearCallsDialog) {
         AlertDialog(
             onDismissRequest = { showClearCallsDialog = false },
-            title = { Text("Clear call history for both users?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
+            title = { Text("Clear Call History?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
             containerColor = DuoLinkSurface,
-            text = { Text("This will permanently delete all call records from BOTH your phone and your partner's phone.", color = DuoLinkTextMuted) },
+            text = { Text("This will permanently delete all call records on both devices.", color = DuoLinkTextMuted) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showClearCallsDialog = false
                         scope.launch {
                             app.chatRepository.clearCallHistoryForBoth()
-                            Toast.makeText(context, "Call history cleared for both devices", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Call history cleared", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
-                    Text("Clear for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                    Text("Clear", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -582,11 +582,11 @@ fun SettingsScreen(
     if (showClearAllHistoryDialog) {
         AlertDialog(
             onDismissRequest = { showClearAllHistoryDialog = false },
-            title = { Text("Clear ALL history for BOTH users?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
+            title = { Text("Clear All History?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
             containerColor = DuoLinkSurface,
             text = {
                 Text(
-                    "This will permanently delete ALL chat messages, voice notes, media files, and call history from BOTH your phone and your partner's phone.\n\nNothing can be recovered.",
+                    "This will permanently delete all messages, media, and call records on both devices.",
                     color = DuoLinkRedPrimary,
                     fontWeight = FontWeight.Medium
                 )
@@ -597,11 +597,11 @@ fun SettingsScreen(
                         showClearAllHistoryDialog = false
                         scope.launch {
                             app.chatRepository.clearAllHistoryForBoth()
-                            Toast.makeText(context, "ALL history permanently cleared for both devices", Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, "All history cleared", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
-                    Text("Clear EVERYTHING for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                    Text("Clear All", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -615,12 +615,12 @@ fun SettingsScreen(
     if (showEditNameDialog) {
         AlertDialog(
             onDismissRequest = { showEditNameDialog = false },
-            title = { Text("Private Partner Nickname", color = DuoLinkTextWhite, fontWeight = FontWeight.Bold) },
+            title = { Text("Partner Nickname", color = DuoLinkTextWhite, fontWeight = FontWeight.Bold) },
             containerColor = DuoLinkSurface,
             text = {
                 Column {
                     Text(
-                        "Enter the private name you want to see for your partner (e.g., 'My Person ❤️', 'Nitin ❤️'). This name is never shared with your partner or Google.",
+                        "Enter the private name you want to see for your partner (e.g. Partner). This name is only stored on this device.",
                         fontSize = 13.sp,
                         color = DuoLinkTextMuted
                     )
@@ -640,7 +640,7 @@ fun SettingsScreen(
                         showEditNameDialog = false
                         scope.launch {
                             app.pairingRepository.updateLocalNickname(newDisplayName)
-                            Toast.makeText(context, "Nickname updated locally", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Nickname updated", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {

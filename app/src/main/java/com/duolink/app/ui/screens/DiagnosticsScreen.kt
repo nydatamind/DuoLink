@@ -141,7 +141,7 @@ fun DiagnosticsScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
             ) {
                 Text(
-                    text = if (isPinging) "Testing Ping..." else if (pingLatencyMs != null) "Round-Trip: ${pingLatencyMs}ms (Test Again)" else "Test Realtime Latency",
+                    text = if (isPinging) "Testing..." else if (pingLatencyMs != null) "${pingLatencyMs}ms - Test Again" else "Test Latency",
                     color = Color.White
                 )
             }

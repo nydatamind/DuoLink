@@ -242,10 +242,10 @@ fun ChatScreen(
                         )
                     )
                     Text(
-                        text = if (isPeerTyping) "Typing..." else if (isOnline) "Active (Alert)" else when (owlEyeState) {
-                            OwlEyeState.OPEN -> "Recently Active"
-                            OwlEyeState.HALF -> "Sleepy"
-                            OwlEyeState.CLOSED -> "Resting"
+                        text = if (isPeerTyping) "Typing..." else if (isOnline) "Active" else when (owlEyeState) {
+                            OwlEyeState.OPEN -> "Active"
+                            OwlEyeState.HALF -> "Inactive"
+                            OwlEyeState.CLOSED -> "Offline"
                         },
                         style = TextStyle(
                             fontSize = 13.sp,
@@ -300,7 +300,7 @@ fun ChatScreen(
                         modifier = Modifier.background(DuoLinkSurface)
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Clear History for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold) },
+                            text = { Text("Clear History", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold) },
                             leadingIcon = { Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = DuoLinkRedPrimary) },
                             onClick = {
                                 showMenu = false
@@ -745,18 +745,18 @@ fun ChatScreen(
                         }
                     }
 
-                    // Strict "Delete for Everyone" (Deletes from BOTH devices)
+                    // Delete for Everyone
                     TextButton(
                         onClick = {
                             scope.launch {
                                 chatRepo.deleteForEveryone(msg.id)
-                                Toast.makeText(context, "Message deleted for both users", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Deleted for everyone", Toast.LENGTH_SHORT).show()
                             }
                             selectedMessageForAction = null
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Delete for Everyone (Both Devices)", modifier = Modifier.fillMaxWidth(), color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                        Text("Delete for Everyone", modifier = Modifier.fillMaxWidth(), color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                     }
                 }
             },
@@ -768,15 +768,15 @@ fun ChatScreen(
         )
     }
 
-    // CLEAR CHAT HISTORY FOR BOTH CONFIRMATION DIALOG
+    // CLEAR CHAT HISTORY CONFIRMATION DIALOG
     if (showClearHistoryConfirm) {
         AlertDialog(
             onDismissRequest = { showClearHistoryConfirm = false },
-            title = { Text("Clear History for Both?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
+            title = { Text("Clear Chat History?", fontWeight = FontWeight.Bold, color = DuoLinkTextWhite) },
             containerColor = DuoLinkSurface,
             text = {
                 Text(
-                    "Are you sure you want to clear chat history for BOTH $partnerNickname and yourself? All messages, voice notes, and media will be permanently deleted from both devices.",
+                    "This will permanently delete all messages and media on both devices.",
                     color = DuoLinkTextMuted,
                     lineHeight = 20.sp
                 )
@@ -787,11 +787,11 @@ fun ChatScreen(
                         showClearHistoryConfirm = false
                         scope.launch {
                             chatRepo.clearChatHistoryForBoth()
-                            Toast.makeText(context, "Chat history cleared for both users", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Chat history cleared", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
-                    Text("Clear for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                    Text("Clear All", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

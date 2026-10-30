@@ -182,14 +182,14 @@ fun CallHistoryScreen(
             onDismissRequest = { showClearConfirmDialog = false },
             title = {
                 Text(
-                    text = "Clear call history for both users?",
+                    text = "Clear Call History?",
                     fontWeight = FontWeight.Bold,
                     color = DuoLinkTextWhite
                 )
             },
             text = {
                 Text(
-                    text = "This will permanently remove all call records from BOTH your phone and your partner's phone. Call logs cannot be recovered.",
+                    text = "This will permanently delete all call records on both devices.",
                     color = DuoLinkTextMuted,
                     fontSize = 14.sp
                 )
@@ -201,11 +201,11 @@ fun CallHistoryScreen(
                         showClearConfirmDialog = false
                         scope.launch {
                             app.chatRepository.clearCallHistoryForBoth()
-                            Toast.makeText(context, "Call history cleared for both devices", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Call history cleared", Toast.LENGTH_SHORT).show()
                         }
                     }
                 ) {
-                    Text("Clear for Both", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
+                    Text("Clear All", color = DuoLinkRedPrimary, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

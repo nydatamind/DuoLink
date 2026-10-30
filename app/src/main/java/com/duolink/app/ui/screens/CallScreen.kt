@@ -17,13 +17,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeDown
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material.icons.filled.VolumeDown
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -175,7 +175,7 @@ fun CallScreen(
             if (callState == CallState.CONNECTED) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "🔒 Direct E2EE DTLS-SRTP",
+                    text = "Encrypted (DTLS-SRTP)",
                     fontSize = 12.sp,
                     color = DuoLinkTextMuted
                 )
@@ -277,7 +277,7 @@ fun CallScreen(
                             .background(if (isSpeakerOn) DuoLinkRedPrimary else DuoLinkCharcoalBg)
                     ) {
                         Icon(
-                            imageVector = if (isSpeakerOn) Icons.Default.VolumeUp else Icons.Default.VolumeDown,
+                            imageVector = if (isSpeakerOn) Icons.AutoMirrored.Filled.VolumeUp else Icons.AutoMirrored.Filled.VolumeDown,
                             contentDescription = "Speaker",
                             tint = Color.White
                         )

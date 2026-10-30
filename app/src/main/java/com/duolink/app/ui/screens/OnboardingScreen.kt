@@ -87,7 +87,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Exclusive, sovereign communication engineered for exactly two people.",
+                text = "Private end-to-end encrypted messaging for two people.",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = DuoLinkTextMuted
                 ),
@@ -98,24 +98,24 @@ fun OnboardingScreen(
 
             FeatureItem(
                 icon = Icons.Default.Lock,
-                title = "Hardware Cryptography",
-                description = "ECDH P-256 + AES-256-GCM authenticated encryption on your device."
+                title = "End-to-End Encryption",
+                description = "Your messages and calls are encrypted on your device."
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
             FeatureItem(
                 icon = Icons.Default.Call,
-                title = "Direct WebRTC Calls",
-                description = "Peer-to-peer voice and video with DTLS-SRTP encryption."
+                title = "Voice & Video Calls",
+                description = "Encrypted peer-to-peer voice and video calling."
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
             FeatureItem(
                 icon = Icons.Default.Vibration,
-                title = "Silent Vibration Engine",
-                description = "Zero visible banners, zero ringtones, zero lock-screen text."
+                title = "Silent Alerts",
+                description = "Discreet vibration notifications without banners or sounds."
             )
         }
 
@@ -127,14 +127,8 @@ fun OnboardingScreen(
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
         ) {
-            Icon(
-                imageVector = Icons.Default.PersonAdd,
-                contentDescription = null,
-                tint = Color.White
-            )
-            Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Connect Your Partner",
+                text = "Get Started",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

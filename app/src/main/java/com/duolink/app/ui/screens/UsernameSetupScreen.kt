@@ -112,7 +112,7 @@ fun UsernameSetupScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Choose a unique username for your private connection. Your partner will search and add you with this handle.",
+            text = "Choose a unique username for your private connection.",
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = DuoLinkTextMuted,
                 lineHeight = 19.sp
@@ -164,16 +164,16 @@ fun UsernameSetupScreen(
                             Icon(Icons.Default.Error, contentDescription = null, tint = DuoLinkRedPrimary)
                         }
                     },
-                    placeholder = { Text("e.g. nitin_99 or kathy_g", color = DuoLinkTextMuted) },
+                    placeholder = { Text("Enter username", color = DuoLinkTextMuted) },
                     singleLine = true,
                     isError = errorMessage != null,
                     supportingText = {
                         if (errorMessage != null) {
                             Text(errorMessage!!, color = DuoLinkRedPrimary, fontSize = 12.sp)
                         } else if (isAvailable) {
-                            Text("Username is available!", color = Color(0xFF4CAF50), fontSize = 12.sp)
+                            Text("Username available", color = Color(0xFF4CAF50), fontSize = 12.sp)
                         } else {
-                            Text("3–20 characters. Letters, numbers, and underscores only.", color = DuoLinkTextMuted, fontSize = 11.sp)
+                            Text("Letters, numbers, and underscores (3–20 characters).", color = DuoLinkTextMuted, fontSize = 11.sp)
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -208,7 +208,7 @@ fun UsernameSetupScreen(
                             isChecking = false
                             val available = checkRes.getOrNull() ?: true
                             if (!available) {
-                                errorMessage = "Username '@$clean' is already taken. Try another."
+                                errorMessage = "Username '@$clean' is taken"
                                 isAvailable = false
                             } else {
                                 isAvailable = true
@@ -216,10 +216,10 @@ fun UsernameSetupScreen(
                                 val saveRes = profileManager.registerUsername(clean)
                                 isSaving = false
                                 if (saveRes.isSuccess) {
-                                    Toast.makeText(context, "Username '@$clean' created!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Username set", Toast.LENGTH_SHORT).show()
                                     onUsernameCreated()
                                 } else {
-                                    errorMessage = "Failed to save username: ${saveRes.exceptionOrNull()?.message}"
+                                    errorMessage = "Failed to save: ${saveRes.exceptionOrNull()?.message}"
                                 }
                             }
                         }
@@ -234,10 +234,10 @@ fun UsernameSetupScreen(
                     if (isSaving) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Setting up profile...", color = Color.White)
+                        Text("Saving...", color = Color.White)
                     } else {
                         Text(
-                            text = "Save Username & Continue",
+                            text = "Continue",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = Color.White
@@ -258,11 +258,14 @@ fun UsernameSetupScreen(
                 .padding(14.dp)
         ) {
             Text(
-                text = "🔒 Zero-Leak Privacy: Your Gmail address and Google profile info remain strictly secret. Only your username is shared when your partner adds you.",
+                text = "Your email address and Google account details are never shared.",
                 fontSize = 12.sp,
                 color = DuoLinkTextMuted,
-                lineHeight = 17.sp
+                lineHeight = 17.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
 }
+

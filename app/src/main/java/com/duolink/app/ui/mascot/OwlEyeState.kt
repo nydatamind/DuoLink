@@ -9,18 +9,18 @@ enum class OwlEyeState(
     @get:DrawableRes val drawableRes: Int
 ) {
     OPEN(
-        title = "Active & Alert",
-        description = "Partner active in the last 5 minutes",
+        title = "Active",
+        description = "Partner active recently",
         drawableRes = R.drawable.owl_open
     ),
     HALF(
-        title = "Sleepy / Drowsy",
-        description = "Partner inactive for 5 min – 1 hour",
+        title = "Inactive",
+        description = "Partner inactive for some time",
         drawableRes = R.drawable.owl_half
     ),
     CLOSED(
-        title = "Resting / Sleeping",
-        description = "Partner inactive for more than 1 hour",
+        title = "Offline",
+        description = "Partner inactive for over an hour",
         drawableRes = R.drawable.owl_closed
     )
 }

@@ -51,7 +51,7 @@ fun AboutScreen(
             .background(DuoLinkCharcoalBg)
     ) {
         DuoLinkTopBar(
-            title = "About DuoLink",
+            title = "About",
             onBackClick = onBackClick
         )
 
@@ -83,7 +83,7 @@ fun AboutScreen(
             )
 
             Text(
-                text = "Version 1.0.0 (Production Release)",
+                text = "Version 1.0.0",
                 fontSize = 13.sp,
                 color = DuoLinkTextMuted
             )
@@ -93,10 +93,10 @@ fun AboutScreen(
                 colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Two-Person Sovereign Link", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DuoLinkTextWhite)
+                    Text("Private Two-Person Link", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DuoLinkTextWhite)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "DuoLink is an exclusive private communication app built strictly for TWO authorized individuals. It operates without public user directories, third-party social databases, or readable server transcripts.",
+                        text = "DuoLink is designed for private communication between two people with end-to-end encryption. No public directories, ads, or tracking.",
                         fontSize = 14.sp,
                         color = DuoLinkTextMuted,
                         lineHeight = 20.sp
@@ -109,10 +109,10 @@ fun AboutScreen(
                 colors = CardDefaults.cardColors(containerColor = DuoLinkSurface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Cryptographic Architecture", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DuoLinkTextWhite)
+                    Text("Security Specifications", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = DuoLinkTextWhite)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "• Identity & Signatures: NIST P-256 (SHA-256 with ECDSA)\n• Key Agreement: Diffie-Hellman (ECDH P-256)\n• Key Derivation: RFC 5869 HKDF-SHA256\n• Message Encryption: Authenticated AES-256-GCM\n• Media Stream: WebRTC DTLS-SRTP for Voice & Video\n• Local Storage: Android Keystore protected Room SQLite\n• Alert Engine: Silent hardware vibration pattern engine",
+                        text = "Identity: NIST P-256 (ECDSA)\nKey Agreement: ECDH P-256\nEncryption: AES-256-GCM\nMedia: WebRTC DTLS-SRTP\nStorage: Android Keystore + SQLite",
                         fontSize = 13.sp,
                         color = DuoLinkTextMuted,
                         lineHeight = 22.sp
@@ -121,7 +121,7 @@ fun AboutScreen(
             }
 
             Text(
-                text = "Engineered for pure privacy, reliable communication, and zero data leakage.",
+                text = "End-to-end encrypted and private.",
                 fontSize = 12.sp,
                 color = DuoLinkTextMuted,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center

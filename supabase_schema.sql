@@ -65,3 +65,4 @@ BEGIN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.duolink_pairing_requests;
     END IF;
 END $$;
+

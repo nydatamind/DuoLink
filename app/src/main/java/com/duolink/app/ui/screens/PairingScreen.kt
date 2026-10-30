@@ -193,8 +193,8 @@ fun PairingScreen(
             // INCOMING PAIRING REQUESTS (IF ANY)
             if (incomingRequests.isNotEmpty()) {
                 Text(
-                    text = "INCOMING PAIRING REQUESTS",
-                    fontSize = 11.sp,
+                    text = "Incoming Requests",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = DuoLinkRedPrimary
                 )
@@ -208,7 +208,7 @@ fun PairingScreen(
                             scope.launch {
                                 val res = profileManager.acceptPairingRequest(req, partnerCustomNickname)
                                 if (res.isSuccess) {
-                                    Toast.makeText(context, "Pairing confirmed with @${req.senderUsername}!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Connected with @${req.senderUsername}", Toast.LENGTH_SHORT).show()
                                     onPairingSuccess()
                                 } else {
                                     Toast.makeText(context, "Error: ${res.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
@@ -218,7 +218,7 @@ fun PairingScreen(
                         onReject = {
                             scope.launch {
                                 profileManager.rejectPairingRequest(req)
-                                Toast.makeText(context, "Request declined", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Declined", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
@@ -241,7 +241,7 @@ fun PairingScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "Pairing Request Pending",
+                                text = "Request Sent",
                                 fontWeight = FontWeight.Bold,
                                 color = DuoLinkTextWhite,
                                 fontSize = 14.sp
@@ -249,7 +249,7 @@ fun PairingScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Sent request to @${outgoing.receiverUsername}. Waiting for partner to accept on their phone...",
+                            text = "Waiting for @${outgoing.receiverUsername} to accept.",
                             fontSize = 13.sp,
                             color = DuoLinkTextMuted,
                             lineHeight = 18.sp
@@ -259,13 +259,13 @@ fun PairingScreen(
                             onClick = {
                                 scope.launch {
                                     profileManager.cancelOutgoingRequest()
-                                    Toast.makeText(context, "Request cancelled", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("Cancel Request", color = DuoLinkRedPrimary, fontWeight = FontWeight.SemiBold)
+                            Text("Cancel", color = DuoLinkRedPrimary, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -280,14 +280,14 @@ fun PairingScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Find Partner by Username",
+                            text = "Find Partner",
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = DuoLinkTextWhite
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Enter your partner's DuoLink username to send a secure pairing request.",
+                            text = "Search for your partner by their username.",
                             fontSize = 12.sp,
                             color = DuoLinkTextMuted
                         )
@@ -309,7 +309,7 @@ fun PairingScreen(
                                     searchResults = emptyList()
                                 }
                             },
-                            placeholder = { Text("Search username (e.g. kathy_g)", color = DuoLinkTextMuted) },
+                            placeholder = { Text("Enter partner username", color = DuoLinkTextMuted) },
                             leadingIcon = {
                                 Icon(Icons.Default.Search, contentDescription = null, tint = DuoLinkRedPrimary)
                             },
@@ -339,7 +339,7 @@ fun PairingScreen(
                         // SEARCH RESULTS
                         if (searchResults.isNotEmpty()) {
                             Text(
-                                text = "MATCHING USERS",
+                                text = "Results",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = DuoLinkTextMuted
@@ -376,7 +376,7 @@ fun PairingScreen(
                                             scope.launch {
                                                 val res = profileManager.sendPairingRequest(user, user.username)
                                                 if (res.isSuccess) {
-                                                    Toast.makeText(context, "Pairing request sent to @${user.username}!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "Request sent to @${user.username}", Toast.LENGTH_SHORT).show()
                                                     searchQuery = ""
                                                     searchResults = emptyList()
                                                 } else {
@@ -387,16 +387,14 @@ fun PairingScreen(
                                         shape = RoundedCornerShape(10.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
                                     ) {
-                                        Icon(Icons.Default.PersonAdd, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Add Partner", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        Text("Add", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
                         } else if (searchQuery.trim().length >= 2 && !isSearching) {
                             Text(
-                                text = "No users found matching '@$searchQuery'. Ensure partner has installed DuoLink and registered their username.",
+                                text = "No user found for '@$searchQuery'.",
                                 fontSize = 12.sp,
                                 color = DuoLinkTextMuted
                             )
@@ -423,7 +421,7 @@ fun PairingScreen(
                             Icon(Icons.Default.QrCode, contentDescription = null, tint = DuoLinkRedPrimary)
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "Alternative: Offline QR Code",
+                                text = "Pair via QR Code",
                                 fontWeight = FontWeight.Bold,
                                 color = DuoLinkTextWhite,
                                 fontSize = 14.sp
@@ -452,7 +450,7 @@ fun PairingScreen(
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("Show My QR", fontSize = 12.sp, color = DuoLinkTextWhite)
+                                Text("Show QR", fontSize = 12.sp, color = DuoLinkTextWhite)
                             }
 
                             OutlinedButton(
@@ -500,11 +498,11 @@ fun PairingScreen(
                                         scope.launch {
                                             val res = pairingRepo.verifyAndCompletePairingFromQr(
                                                 qrJson = qrText,
-                                                privateNicknameForPartner = "Partner ❤️",
+                                                privateNicknameForPartner = "Partner",
                                                 myInternalGoogleUserId = myUsername
                                             )
                                             if (res.isSuccess) {
-                                                Toast.makeText(context, "Pairing verified successfully!", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Pairing verified", Toast.LENGTH_SHORT).show()
                                                 onPairingSuccess()
                                             } else {
                                                 Toast.makeText(context, "QR Error: ${res.exceptionOrNull()?.message}", Toast.LENGTH_LONG).show()
@@ -518,7 +516,7 @@ fun PairingScreen(
                 }
             }
 
-            // PRIVACY & SECURITY ADVISORY
+            // PRIVACY NOTE
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -526,16 +524,13 @@ fun PairingScreen(
                     .background(DuoLinkSurface)
                     .padding(14.dp)
             ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(Icons.Default.Shield, contentDescription = null, tint = DuoLinkRedPrimary, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "🔒 Sovereign Link: Communication is strictly 1-on-1. Once paired, your link is exclusive. Neither party can add another user without explicitly unpairing.",
-                        fontSize = 11.sp,
-                        color = DuoLinkTextMuted,
-                        lineHeight = 16.sp
-                    )
-                }
+                Text(
+                    text = "DuoLink is private and exclusive to two users.",
+                    fontSize = 12.sp,
+                    color = DuoLinkTextMuted,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
@@ -566,7 +561,7 @@ private fun IncomingRequestCard(
                         color = DuoLinkTextWhite
                     )
                     Text(
-                        text = "wants to permanently link with you",
+                        text = "wants to connect",
                         fontSize = 12.sp,
                         color = DuoLinkRedPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -579,8 +574,8 @@ private fun IncomingRequestCard(
             OutlinedTextField(
                 value = partnerNickname,
                 onValueChange = onNicknameChange,
-                label = { Text("Private Nickname for Partner") },
-                placeholder = { Text("e.g. My Person ❤️") },
+                label = { Text("Partner Nickname") },
+                placeholder = { Text("e.g. Partner") },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = DuoLinkTextWhite,
@@ -604,20 +599,16 @@ private fun IncomingRequestCard(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = null, tint = DuoLinkTextMuted, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Decline", color = DuoLinkTextMuted, fontSize = 13.sp)
                 }
 
                 Button(
                     onClick = onAccept,
-                    modifier = Modifier.weight(1.2f),
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DuoLinkRedPrimary)
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Accept & Pair", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("Accept", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }
